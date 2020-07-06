@@ -76,9 +76,13 @@ pub enum Argument {
     Atom(String),
 }
 
+// TODO: Don't declare all atoms here somehow
 #[derive(PartialEq, Eq, Hash)]
-pub struct Atom {
-    pub name: String,
+pub enum Atom {
+    PrintHello,
+    PrintMesg,
+
+    Other(String),
 }
 
 pub struct Context<'a> {

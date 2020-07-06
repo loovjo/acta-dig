@@ -11,9 +11,7 @@ fn main() {
         .send(acting::Message {
             to: io_addr,
             cont: acting::MessageContent {
-                atom: acting::Atom {
-                    name: io_actor::ATOM_HELLO.to_string(),
-                },
+                atom: acting::Atom::PrintHello,
                 data: vec![],
             },
         })
