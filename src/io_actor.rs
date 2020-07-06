@@ -8,6 +8,9 @@ impl acting::Actor for IOActor {
             (acting::Atom::PrintHello, &[]) => {
                 println!("Hello");
             }
+            (acting::Atom::PrintMsg, &[acting::Argument::String(ref msg)]) => {
+                println!("{}", msg);
+            }
             _ => {}
         }
     }

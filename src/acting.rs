@@ -80,7 +80,7 @@ pub enum Argument {
 #[derive(PartialEq, Eq, Hash)]
 pub enum Atom {
     PrintHello,
-    PrintMesg,
+    PrintMsg,
 
     Other(String),
 }

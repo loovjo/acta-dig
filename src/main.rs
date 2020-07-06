@@ -11,8 +11,8 @@ fn main() {
         .send(acting::Message {
             to: io_addr,
             cont: acting::MessageContent {
-                atom: acting::Atom::PrintHello,
-                data: vec![],
+                atom: acting::Atom::PrintMsg,
+                data: vec![acting::Argument::String("Hello, world".to_string())],
             },
         })
         .expect("Could not send");
