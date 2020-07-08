@@ -125,4 +125,11 @@ impl<'a> Context<'a> {
 
 pub trait Actor {
     fn handle_message<'a>(&'a mut self, message: MessageContent, ctx: Context<'a>);
+    fn debug_info<'a>(&'a self) -> Box<dyn DebugInfo + 'a>;
+}
+
+// TODO: We could probably use a more concise and less borrowed interface. &str should be fine instead of using Strings
+pub trait DebugInfo {
+    fn get_actor_name(&self) -> String;
+    fn get_atom_name(&self, atom: Atom) -> Option<String>;
 }

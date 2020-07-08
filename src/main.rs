@@ -55,7 +55,7 @@ fn construct_dyn() -> dyn_actor::DynActor {
 
     let fn_1_boxed: Box<dyn Fn(acting::MessageContent, acting::Context)> = Box::new(fn_1);
 
-    actor_fns.insert(ATOM_START, fn_1_boxed);
+    actor_fns.insert(ATOM_START, ("START".to_string(), fn_1_boxed));
 
-    dyn_actor::DynActor { actor_fns }
+    dyn_actor::DynActor { actor_name: "Starter Boi".to_string(), actor_fns }
 }
