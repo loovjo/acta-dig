@@ -1,6 +1,7 @@
 mod acting;
-mod dyn_actor;
-mod io_actor;
+
+mod actors;
+use actors::{dyn_actor, io_actor};
 
 const ATOM_START: acting::Atom = acting::Atom(0);
 
