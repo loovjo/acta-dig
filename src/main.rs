@@ -1,5 +1,6 @@
 mod acting;
 mod io_actor;
+mod dyn_actor;
 
 fn main() {
     let mut worker = acting::Worker::new();
