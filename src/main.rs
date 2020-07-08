@@ -17,20 +17,17 @@ fn main() {
     eprintln!("Registered io actor at {:?}", io_addr);
     eprintln!("Registered dyn actor at {:?}", dyn_addr);
 
-    worker
-        .msg_queue
-        .make_ctx()
-        .push_msg(acting::Message {
-            to: dyn_addr,
-            cont: acting::MessageContent {
-                atom: ATOM_START,
-                data: vec![
-                    acting::Argument::ActorAddr(io_addr),
-                    acting::Argument::Atom(io_actor::IOActor::PRINT_MSG),
-                ],
-            },
-            arrive_after: None,
-        });
+    worker.msg_queue.make_ctx().push_msg(acting::Message {
+        to: dyn_addr,
+        cont: acting::MessageContent {
+            atom: ATOM_START,
+            data: vec![
+                acting::Argument::ActorAddr(io_addr),
+                acting::Argument::Atom(io_actor::IOActor::PRINT_MSG),
+            ],
+        },
+        arrive_after: None,
+    });
 
     while worker.step_once() {}
 }
@@ -38,24 +35,30 @@ fn main() {
 fn construct_dyn() -> dyn_actor::DynActor {
     let mut actor_fns = std::collections::HashMap::new();
 
-    let fn_1 =
-        move |msg_content: acting::MessageContent, mut ctx: acting::Context| match &*msg_content.data {
+    let fn_1 = move |msg_content: acting::MessageContent, mut context: acting::Context| {
+        match &*msg_content.data {
             &[acting::Argument::ActorAddr(io_addr), acting::Argument::Atom(ref atom)] => {
-                ctx.push_msg(acting::Message {
+                context.push_msg(acting::Message {
                     to: io_addr,
                     cont: acting::MessageContent {
                         atom: *atom,
                         data: vec![acting::Argument::String("Hello, world".to_string())],
                     },
-                    arrive_after: Some(std::time::Instant::now() + std::time::Duration::from_secs(1)),
+                    arrive_after: Some(
+                        std::time::Instant::now() + std::time::Duration::from_secs(1),
+                    ),
                 });
             }
             _ => {}
-        };
+        }
+    };
 
     let fn_1_boxed: Box<dyn Fn(acting::MessageContent, acting::Context)> = Box::new(fn_1);
 
     actor_fns.insert(ATOM_START, ("START".to_string(), fn_1_boxed));
 
-    dyn_actor::DynActor { actor_name: "Starter Boi".to_string(), actor_fns }
+    dyn_actor::DynActor {
+        actor_name: "Starter Boi".to_string(),
+        actor_fns,
+    }
 }
