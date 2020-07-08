@@ -3,7 +3,7 @@ use crate::acting;
 pub struct IOActor;
 
 impl acting::Actor for IOActor {
-    fn handle_message(&self, msg: acting::MessageContent, _ctx: acting::Context) {
+    fn handle_message(&mut self, msg: acting::MessageContent, _ctx: acting::Context) {
         match (msg.atom, &*msg.data) {
             (acting::Atom::PrintHello, &[]) => {
                 println!("Hello");

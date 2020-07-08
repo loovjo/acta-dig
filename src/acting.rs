@@ -73,7 +73,7 @@ pub enum Argument {
     ActorAddr(ActorAddr),
     Number(i32),
     String(String),
-    Atom(String),
+    Atom(Atom),
 }
 
 // TODO: Don't declare all atoms here somehow
@@ -82,13 +82,15 @@ pub enum Atom {
     PrintHello,
     PrintMsg,
 
+    DynActorStart,
+
     Other(String),
 }
 
 pub struct Context<'a> {
-    msg_sender: &'a mut Sender<Message>,
+    pub msg_sender: &'a mut Sender<Message>,
 }
 
 pub trait Actor {
-    fn handle_message<'a>(&'a self, message: MessageContent, ctx: Context<'a>);
+    fn handle_message<'a>(&'a mut self, message: MessageContent, ctx: Context<'a>);
 }
