@@ -29,6 +29,7 @@ impl Worker {
     pub fn step_once(&mut self) -> bool {
         match self.msg_recv.try_recv() {
             Ok(Message { to, cont }) => {
+                eprintln!("Sending {:?} to {:?}", cont, to);
                 if let Some(act) = self.actors.get_mut(&to) {
                     let ctx = Context {
                         msg_sender: &mut self.msg_send,
@@ -58,17 +59,19 @@ impl ActorAddr {
         ActorAddr { addr: random() }
     }
 }
-
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct Message {
     pub to: ActorAddr,
     pub cont: MessageContent,
 }
 
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct MessageContent {
     pub atom: Atom,
     pub data: Vec<Argument>,
 }
 
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum Argument {
     ActorAddr(ActorAddr),
     Number(i32),
@@ -76,16 +79,8 @@ pub enum Argument {
     Atom(Atom),
 }
 
-// TODO: Don't declare all atoms here somehow
-#[derive(PartialEq, Eq, Hash)]
-pub enum Atom {
-    PrintHello,
-    PrintMsg,
-
-    DynActorStart,
-
-    Other(String),
-}
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
+pub struct Atom(pub u32);
 
 pub struct Context<'a> {
     pub msg_sender: &'a mut Sender<Message>,
