@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::time::Instant;
 
 use rand::random;
 
@@ -24,9 +25,7 @@ impl MessageQueue {
     }
 
     pub fn make_ctx<'a>(&'a mut self) -> Context<'a> {
-        Context {
-            msg_queue: self,
-        }
+        Context { msg_queue: self }
     }
 }
 
@@ -52,7 +51,19 @@ impl Worker {
 
     pub fn step_once(&mut self) -> bool {
         match self.msg_queue.pop_msg() {
-            Some(Message { to, cont }) => {
+            Some(Message {
+                arrive_after: Some(arrive_after),
+                to,
+                cont,
+            }) if Instant::now() < arrive_after => {
+                self.msg_queue.push_msg(Message {
+                    arrive_after: Some(arrive_after),
+                    to,
+                    cont,
+                });
+                true
+            }
+            Some(Message { to, cont, .. }) => {
                 eprintln!("Sending {:?} to {:?}", cont, to);
                 if let Some(act) = self.actors.get_mut(&to) {
                     let ctx = self.msg_queue.make_ctx();
@@ -81,6 +92,7 @@ impl ActorAddr {
 pub struct Message {
     pub to: ActorAddr,
     pub cont: MessageContent,
+    pub arrive_after: Option<Instant>,
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]

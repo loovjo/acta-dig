@@ -29,6 +29,7 @@ fn main() {
                     acting::Argument::Atom(io_actor::IOActor::PRINT_MSG),
                 ],
             },
+            arrive_after: None,
         });
 
     while worker.step_once() {}
@@ -46,6 +47,7 @@ fn construct_dyn() -> dyn_actor::DynActor {
                         atom: *atom,
                         data: vec![acting::Argument::String("Hello, world".to_string())],
                     },
+                    arrive_after: Some(std::time::Instant::now() + std::time::Duration::from_secs(1)),
                 });
             }
             _ => {}
