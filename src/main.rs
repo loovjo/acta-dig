@@ -18,8 +18,9 @@ fn main() {
     eprintln!("Registered dyn actor at {:?}", dyn_addr);
 
     worker
-        .msg_send
-        .send(acting::Message {
+        .msg_queue
+        .make_ctx()
+        .push_msg(acting::Message {
             to: dyn_addr,
             cont: acting::MessageContent {
                 atom: ATOM_START,
@@ -28,8 +29,7 @@ fn main() {
                     acting::Argument::Atom(io_actor::IOActor::PRINT_MSG),
                 ],
             },
-        })
-        .expect("Could not send");
+        });
 
     while worker.step_once() {}
 }
@@ -38,17 +38,15 @@ fn construct_dyn() -> dyn_actor::DynActor {
     let mut actor_fns = std::collections::HashMap::new();
 
     let fn_1 =
-        move |msg_content: acting::MessageContent, ctx: acting::Context| match &*msg_content.data {
+        move |msg_content: acting::MessageContent, mut ctx: acting::Context| match &*msg_content.data {
             &[acting::Argument::ActorAddr(io_addr), acting::Argument::Atom(ref atom)] => {
-                ctx.msg_sender
-                    .send(acting::Message {
-                        to: io_addr,
-                        cont: acting::MessageContent {
-                            atom: *atom,
-                            data: vec![acting::Argument::String("Hello, world".to_string())],
-                        },
-                    })
-                    .expect("Could not send");
+                ctx.push_msg(acting::Message {
+                    to: io_addr,
+                    cont: acting::MessageContent {
+                        atom: *atom,
+                        data: vec![acting::Argument::String("Hello, world".to_string())],
+                    },
+                });
             }
             _ => {}
         };
