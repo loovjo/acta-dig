@@ -64,13 +64,31 @@ impl Worker {
                 true
             }
             Some(Message { to, cont, .. }) => {
-                eprintln!("Sending {:?} to {:?}", cont, to);
                 if let Some(act) = self.actors.get_mut(&to) {
+                    {
+                        // Debug information
+                        let rec_debug_info = act.debug_info();
+                        let actor_name = rec_debug_info.get_actor_name();
+                        let atom_name = rec_debug_info.get_atom_name(cont.atom);
+                        eprintln!(
+                            "Sending {}({:?}) to {:?}/{:?}",
+                            atom_name
+                                .map(|x| format!("{:?}", x))
+                                .unwrap_or("UNK".to_string()),
+                            cont.data,
+                            actor_name,
+                            to,
+                        );
+                    }
                     let ctx = self.msg_queue.make_ctx();
                     act.handle_message(cont, ctx);
                     true
                 } else {
-                    false
+                    eprintln!(
+                        "Tried sending message to nonexistant/dead actor with address {:?}. Message content = {:?}",
+                        to, cont
+                    );
+                    true
                 }
             }
             None => false,
@@ -78,9 +96,15 @@ impl Worker {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub struct ActorAddr {
     pub addr: u32,
+}
+
+impl std::fmt::Debug for ActorAddr {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(fmt, "@{:x}", self.addr)
+    }
 }
 
 impl ActorAddr {
