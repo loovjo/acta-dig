@@ -268,33 +268,27 @@ priority_order = [
 ]
 
 def parse_one(inp):
-    last_exception = None
+    exceptions = []
     for thing in priority_order:
         try:
             return thing.parse_one(inp)
         except ParseException as x:
-            last_exception = x
+            exceptions.append(x)
 
-    raise last_exception
+    raise ParseException(
+        ", ".join([exception.reason for exception in exceptions]),
+        exceptions[0].span, # TODO: fix
+    )
 
 def parse_all(inp):
     if inp.cursor == len(inp.file_cont):
         return []
 
     thing, inp  = parse_one(inp)
-    print("Parsed", thing)
-    thing.span.print_aa()
     rest = parse_all(inp)
     return [thing] + rest
 
-inp_text = r"""
-r55
-7.5
-123
-'hello\'123\n'
-; hello
-yo_yo
-"""
+inp_text = open("../test.dig").read()
 inp_pi = ParseInput(inp_text)
 try:
     for thing in parse_all(inp_pi):
