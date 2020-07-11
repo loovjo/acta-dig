@@ -170,6 +170,7 @@ class Integer(Token):
         self.value = value
 
     NUMBER = take_while(lambda x: x in "0123456789")
+    @spaced
     def parse_one(inp):
         number, inp = Integer.NUMBER(inp)
 
@@ -192,11 +193,12 @@ class Float(Token):
                 if " " in st or "\n" in st:
                     raise ValueError()
                 value = float(st)
-                longest_flength = flength
+                if "." in st:
+                    longest_flength = flength
             except ValueError as _:
                 break
 
-        if value is None:
+        if longest_flength == 0:
             raise ParseException("Expected float", Span(inp.cursor, inp.cursor + 1, inp.file_cont))
 
         span = Span(inp.cursor, inp.cursor + longest_flength, inp.file_cont)
@@ -205,7 +207,7 @@ class Float(Token):
         return Float(span, value), inp
 
 priority_order = [
-    Integer, Float, String, AssemblyInstructionToken, Comment,
+    Float, Integer, String, AssemblyInstructionToken, Comment,
 ]
 
 def parse_one(inp):
