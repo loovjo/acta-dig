@@ -35,6 +35,24 @@ class Token(ABC):
     def parse_one(inp):
         pass
 
+def map_res(res_wrapper, parse_fn):
+    def parse_one(inp):
+        data, inp = parse_fn(inp)
+
+        return res_wrapper(data), inp
+
+    return parse_one
+
+def change_reason(reason, parse_fn):
+    def parse_one(inp):
+        try:
+            return parse_fn(inp)
+        except ParseException as e:
+            e.reason = reason
+            raise e
+
+    return parse_one
+
 def take_while(fn):
     fn_ = lambda x: x != "" and fn(x)
     def parse_one(inp):
@@ -65,17 +83,24 @@ def take_while0(fn):
 
     return parse_one
 
-parse_spaces = take_while0(lambda x: x in " \n")
+parse_spaces = change_reason("Expected space", take_while0(lambda x: x in " \n"))
+parse_spaces1 = change_reason("Expected space", take_while(lambda x: x in " \n"))
 
 def spaced(parse_fn):
     def parse_one(inp):
         _, inp = parse_spaces(inp)
         data, inp = parse_fn(inp)
-        _, inp = parse_spaces(inp)
+        if inp.cursor != len(inp.file_cont):
+            _, inp = parse_spaces1(inp)
 
         return data, inp
 
     return parse_one
+
+parse_int = change_reason(
+    "Expected integer",
+    map_res(lambda span: (span, int(span.get())), take_while(lambda x: x in "0123456789"))
+)
 
 def find_exact(st):
     def parse_one(inp):
@@ -88,13 +113,6 @@ def find_exact(st):
 
     return parse_one
 
-def map_res(res_wrapper, parse_fn):
-    def parse_one(inp):
-        data, inp = parse_fn(inp)
-
-        return res_wrapper(data), inp
-
-    return parse_one
 
 class AssemblyInstructionToken(Token):
     def __init__(self, span, inst):
@@ -116,12 +134,12 @@ class Register(Token):
     @spaced
     def parse_one(inp):
         span, inp = Register.LETTER_R(inp)
-        reg_idx, inp = Integer.parse_one(inp)
+        (ispan, reg_idx), inp = parse_int(inp)
 
-        if 0 <= reg_idx.value < 256:
-            return Register(span.combine(reg_idx.span), reg_idx.value), inp
+        if 0 <= reg_idx < 256:
+            return Register(span.combine(ispan), reg_idx), inp
         else:
-            raise ParseException("Register outside range 0-255", reg_idx.span)
+            raise ParseException("Register outside range 0-255", ispan)
 
 class Comment(Token):
     CommentStart = find_exact(";")
@@ -185,12 +203,11 @@ class Integer(Token):
         super(Integer, self).__init__(span)
         self.value = value
 
-    NUMBER = take_while(lambda x: x in "0123456789")
     @spaced
     def parse_one(inp):
-        number, inp = Integer.NUMBER(inp)
+        (span, number), inp = parse_int(inp)
 
-        return Integer(number, int(number.get())), inp
+        return Integer(span, number), inp
 
 class Float(Token):
     def __init__(self, span, value):
