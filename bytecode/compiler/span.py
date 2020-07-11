@@ -1,4 +1,4 @@
-SPAN_COL = "\033[38;5;16m"
+SPAN_COL = "\033[38;5;9m"
 RESET_COL = "\033[0m"
 
 def lpad(st, wanted_len, pad_ch=" "):
@@ -71,7 +71,7 @@ class Span:
             else:
                 print(
                     SPAN_COL +
-                    "   " + " " * (linenr_len + offset_into_first_line) +
+                    "──╯" + " " * (linenr_len + offset_into_first_line) +
                     "╰" +
                     "─" * (offset_into_last_line - offset_into_first_line - 1) +
                     "╯" +
