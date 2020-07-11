@@ -53,7 +53,7 @@ def change_reason(reason, parse_fn):
 
     return parse_one
 
-def take_while(fn):
+def take_while(fn, err_reason):
     fn_ = lambda x: x != "" and fn(x)
     def parse_one(inp):
         if fn_(inp.peek().get()):
@@ -64,7 +64,7 @@ def take_while(fn):
 
             return span, inp
         else:
-            raise ParseException("Not found", inp.peek())
+            raise ParseException(err_reason, inp.peek())
 
     return parse_one
 
@@ -83,8 +83,8 @@ def take_while0(fn):
 
     return parse_one
 
-parse_spaces = change_reason("Expected space", take_while0(lambda x: x in " \n"))
-parse_spaces1 = change_reason("Expected space", take_while(lambda x: x in " \n"))
+parse_spaces = take_while0(lambda x: x in " \n")
+parse_spaces1 = take_while(lambda x: x in " \n", "Expected space")
 
 def spaced(parse_fn):
     def parse_one(inp):
@@ -97,9 +97,9 @@ def spaced(parse_fn):
 
     return parse_one
 
-parse_int = change_reason(
-    "Expected integer",
-    map_res(lambda span: (span, int(span.get())), take_while(lambda x: x in "0123456789"))
+parse_int = map_res(
+    lambda span: (span, int(span.get())),
+    take_while(lambda x: x in "0123456789", "Expected integer")
 )
 
 def find_exact(st):
@@ -119,9 +119,10 @@ class AssemblyInstructionToken(Token):
         super(AssemblyInstructionToken, self).__init__(span)
         self.inst = inst
 
+    PARSE_TOKEN = take_while(lambda ch: ch in "abcdefghijklmnopqrstuvwxyz_", "Expected token")
     @spaced
     def parse_one(inp):
-        span, inp = spaced(take_while(lambda ch: ch in "abcdefghijklmnopqrstuvwxyz_"))(inp)
+        span, inp = AssemblyInstructionToken.PARSE_TOKEN(inp)
 
         return AssemblyInstructionToken(span, span.get()), inp
 
@@ -143,7 +144,7 @@ class Register(Token):
 
 class Comment(Token):
     CommentStart = find_exact(";")
-    UntilEOL = take_while(lambda x: x != "\n")
+    UntilEOL = take_while(lambda x: x != "\n", "Expected newline")
 
     def parse_one(inp):
         comment_syntax, inp = Comment.CommentStart(inp)
