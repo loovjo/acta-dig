@@ -146,12 +146,49 @@ class String(Token):
 
         return String(span, value), inp
 
+class Integer(Token):
+    def __init__(self, span, value):
+        super(Integer, self).__init__(span)
+        self.value = value
 
-inp_text = r"'hello\nworld' yo"
+    NUMBER = take_while(lambda x: x in "0123456789")
+    def parse_one(inp):
+        number, inp = Integer.NUMBER.parse_one(inp)
+
+        return Integer(number.span, int(number.span.get())), inp
+
+class Float(Token):
+    def __init__(self, span, value):
+        super(Float, self).__init__(span)
+        self.value = value
+
+    def parse_one(inp):
+        # TODO: This currently breaks on things like 1e5, because it assumes a prefix of a valid
+        # float is a valid float. '1e' is not a valid float
+        longest_flength = 0
+        for flength in range(1, len(inp.file_cont) - inp.cursor):
+            try:
+                st = inp.file_cont[inp.cursor:inp.cursor+flength]
+                if " " in st:
+                    raise ValueError()
+                value = float(st)
+                longest_flength = flength
+            except ValueError as _:
+                if inp.file_cont[inp.cursor+flength-1] == "e":
+                    continue
+                break
+
+        span = Span(inp.cursor, inp.cursor + longest_flength, inp.file_cont)
+        inp.cursor += longest_flength
+
+        return Float(span, value), inp
+
+inp_text = r"123 yo"
 inp_pi = ParseInput(inp_text)
 try:
-    inst, inp_pi = String.parse_one(inp_pi)
+    inst, inp_pi = Float.parse_one(inp_pi)
     inst.span.print_aa()
+    print(inst.value)
 
     inst, inp_pi = AssemblyInstructionToken.parse_one(inp_pi)
     inst.span.print_aa()
