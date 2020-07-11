@@ -97,6 +97,16 @@ def spaced(parse_fn):
 
     return parse_one
 
+def spaced_light(parse_fn):
+    def parse_one(inp):
+        _, inp = parse_spaces(inp)
+        data, inp = parse_fn(inp)
+        _, inp = parse_spaces(inp)
+
+        return data, inp
+
+    return parse_one
+
 parse_int = map_res(
     lambda span: (span, int(span.get())),
     take_while(lambda x: x in "0123456789", "Expected integer")
@@ -125,6 +135,19 @@ class AssemblyInstructionToken(Token):
         span, inp = AssemblyInstructionToken.PARSE_TOKEN(inp)
 
         return AssemblyInstructionToken(span, span.get()), inp
+
+class Macro(Token):
+    def __init__(self, span, macro_name):
+        super(Macro, self).__init__(span)
+        self.macro_name = macro_name
+
+    PARSE_MACRO = take_while(lambda ch: ch in "abcdefghijklmnopqrstuvwxyz_=", "Expected token")
+    @spaced
+    def parse_one(inp):
+        span, inp = find_exact("@")(inp)
+        macro_name, inp = Macro.PARSE_MACRO(inp)
+
+        return Macro(span.combine(macro_name), macro_name.get()), inp
 
 class Register(Token):
     def __init__(self, span, reg_idx):
@@ -182,7 +205,7 @@ class String(Token):
         self.value = value
 
     START_END = find_exact("'")
-    @spaced
+    @spaced_light
     def parse_one(inp):
         span, inp = String.START_END(inp)
 
@@ -241,7 +264,7 @@ class Float(Token):
         return Float(span, value), inp
 
 priority_order = [
-    Register, Float, Integer, String, AssemblyInstructionToken, Comment,
+    Macro, Register, Float, Integer, String, AssemblyInstructionToken, Comment,
 ]
 
 def parse_one(inp):
