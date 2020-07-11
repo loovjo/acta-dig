@@ -35,6 +35,13 @@ class Token(ABC):
     def parse_one(inp):
         pass
 
+    @abstractmethod
+    def __repr__(self):
+        pass
+
+    def __str__(self):
+        return __repr__(self)
+
 def map_res(res_wrapper, parse_fn):
     def parse_one(inp):
         data, inp = parse_fn(inp)
@@ -136,6 +143,9 @@ class AssemblyInstructionToken(Token):
 
         return AssemblyInstructionToken(span, span.get()), inp
 
+    def __repr__(self):
+        return f"AssemblyInstructionToken(inst={repr(self.inst)}"
+
 class Macro(Token):
     def __init__(self, span, macro_name):
         super(Macro, self).__init__(span)
@@ -151,6 +161,9 @@ class Macro(Token):
             _, inp = parse_spaces1(inp)
 
         return Macro(span.combine(macro_name), macro_name.get()), inp
+
+    def __repr__(self):
+        return f"Macro(inst={repr(self.macro_name)}"
 
 class Register(Token):
     def __init__(self, span, reg_idx):
@@ -168,6 +181,9 @@ class Register(Token):
         else:
             raise ParseException("Register outside range 0-255", ispan)
 
+    def __repr__(self):
+        return f"Register(reg≈idx={self.reg_idx}"
+
 class Comment(Token):
     CommentStart = find_exact(";")
     UntilEOL = take_while(lambda x: x != "\n", "Expected newline")
@@ -178,6 +194,9 @@ class Comment(Token):
         comment, inp = Comment.UntilEOL(inp)
 
         return Comment(comment_syntax.combine(comment)), inp
+
+    def __repr__(self):
+        return f"Comment"
 
 class Char(Token):
     def __init__(self, span, value):
@@ -203,6 +222,9 @@ class Char(Token):
         else:
             return Char(ch, ch.get()), inp
 
+    def __repr__(self):
+        return f"Char(value={repr(self.value)}"
+
 class String(Token):
     def __init__(self, span, value):
         super(String, self).__init__(span)
@@ -226,6 +248,9 @@ class String(Token):
 
         return String(span, value), inp
 
+    def __repr__(self):
+        return f"String(value={repr(self.value)}"
+
 class Integer(Token):
     def __init__(self, span, value):
         super(Integer, self).__init__(span)
@@ -236,6 +261,10 @@ class Integer(Token):
         (span, number), inp = parse_int(inp)
 
         return Integer(span, number), inp
+
+    def __repr__(self):
+        return f"Integer(value={self.value}"
+
 
 class Float(Token):
     def __init__(self, span, value):
@@ -266,6 +295,9 @@ class Float(Token):
         inp.cursor += longest_flength
 
         return Float(span, value), inp
+
+    def __repr__(self):
+        return f"Float(value={self.value}"
 
 priority_order = [
     Macro, Register, Float, Integer, String, AssemblyInstructionToken, Comment,
