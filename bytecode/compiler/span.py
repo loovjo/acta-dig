@@ -10,6 +10,10 @@ class Span:
         self.end = end
         self.source_lines = source.split("\n")
 
+    def combine(self, other):
+        if self.end == other.start and self.source_lines == other.source_lines:
+            return Span(self.start, other.end, self.source_lines)
+
     def print_aa(self):
         # Find start line
         line_start = 0
@@ -46,14 +50,22 @@ class Span:
                 " │",
                 RESET_COL + self.source_lines[start_line]
             )
-            print(
-                SPAN_COL +
-                "   " + " " * (linenr_len + offset_into_first_line) +
-                "╰─" +
-                "─" * (offset_into_last_line - offset_into_first_line - 2) +
-                "╯" +
-                RESET_COL
-            )
+            if offset_into_first_line == offset_into_last_line:
+                print(
+                    SPAN_COL +
+                    "   " + " " * (linenr_len + offset_into_first_line) +
+                    "^" +
+                    RESET_COL
+                )
+            else:
+                print(
+                    SPAN_COL +
+                    "   " + " " * (linenr_len + offset_into_first_line) +
+                    "╰" +
+                    "─" * (offset_into_last_line - offset_into_first_line - 1) +
+                    "╯" +
+                    RESET_COL
+                )
         else:
             print(
                 SPAN_COL +
@@ -82,6 +94,6 @@ class Span:
 if __name__ == "__main__":
     file_cont = open(__file__).read()
 
-    span = Span(100, 105, file_cont)
+    span = Span(100, 102, file_cont)
     span.print_aa()
     print(file_cont[span.start], file_cont[span.end])
