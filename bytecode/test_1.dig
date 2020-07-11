@@ -1,4 +1,4 @@
-@= 'c_prefs'
+dw 2
 
 dw @= 'start'
 dw @= 'start_end'
