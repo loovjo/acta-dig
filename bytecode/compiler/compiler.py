@@ -6,6 +6,8 @@ from macro import construct_macro, Macro
 
 import values
 
+from instructions import construct_instruction
+
 def preproc_tokens(token_list):
     return [token for token in token_list if not isinstance(token, CommentToken)]
 
@@ -49,26 +51,27 @@ def pseudo_expand_macros(element_list):
 
     return result, macros
 
-def parse_tokens(token_list):
-    if len(token_list) == 0:
-        return []
+def parse_instructions(element_list):
+    element_list.append(AssemblyInstructionToken(None, "dummy"))
 
-    first_token = token_list[0]
-    if isinstance(first_token, AssemblyInstructionToken):
-        for argument_count in range(len(token_list)):
-            rest = parse_tokens(token_list[1 + argument_count:])
-            if rest != None:
-                arguments = token_list[1:1+argument_count]
-                break
-
-        if len(arguments) > 0:
-            span = first_token.span.combine_nonadjacent(arguments[-1].span)
+    result = []
+    parsing_instruction = None
+    for thing in element_list:
+        if isinstance(thing, AssemblyInstructionToken):
+            if parsing_instruction is not None:
+                # Write previous
+                result.append(construct_instruction(*parsing_instruction))
+                parsing_instruction = None
+            parsing_instruction = (thing, [])
         else:
-            span = first_token.span
+            if parsing_instruction is not None:
+                parsing_instruction[1].append(thing)
+            else:
+                print(thing)
+                print("Argument to no function")
+                exit()
 
-        return [Instruction(span, first_token.inst, arguments)] + rest
-
-        return [Macro(span, first_token.macro_name, arguments)] + rest
+    return result
 
 
 if __name__ == "__main__":
@@ -80,6 +83,7 @@ if __name__ == "__main__":
     parsed = upgrade_values(parsed)
 
     parsed, macros = pseudo_expand_macros(parsed)
+    parsed = parse_instructions(parsed)
 
     print("\n".join(map(repr, parsed)))
     print("--")
