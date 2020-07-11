@@ -17,6 +17,12 @@ class Span:
         else:
             raise ValueError(f"Incompatible spans: {self} and {other}")
 
+    def combine_nonadjacent(self, other):
+        if self.source_lines == other.source_lines:
+            return Span(self.start, other.end, self.source)
+        else:
+            raise ValueError(f"Incompatible spans: {self} and {other}")
+
     def __str__(self):
         return f"Span(start={self.start}, end={self.end}, source hash={hex(hash(self.source))})"
 
