@@ -47,6 +47,9 @@ by that many number of 8-byte pairs, specifying the start and end of each progra
     generate_atom: 0x05 [destination:register]
         Set destination to a randomly generated atom
 
+    integer_to_atom: 0x06 [destination:register]
+        Convert an integer into an atom
+
 === Integer operators
 
     add_int: 0x10 [destination:register] [source:register]
