@@ -204,6 +204,28 @@ class Float(Token):
 
         return Float(span, value), inp
 
+priority_order = [
+    Integer, Float, String, AssemblyInstructionToken, Comment,
+]
+
+def parse_one(inp):
+    last_exception = None
+    for thing in priority_order:
+        try:
+            return thing.parse_one(inp)
+        except ParseException as x:
+            last_exception = x
+
+    raise last_exception
+
+def parse_all(inp):
+    if inp.cursor == len(inp.file_cont):
+        return []
+
+    thing, inp  = parse_one(inp)
+    rest = parse_all(inp)
+    return [thing] + rest
+
 inp_text = r"""
 7.5
 123
@@ -213,23 +235,10 @@ yo_yo
 """
 inp_pi = ParseInput(inp_text)
 try:
-    inst, inp_pi = Float.parse_one(inp_pi)
-    inst.span.print_aa()
-    print(inst.value)
-
-    inst, inp_pi = Integer.parse_one(inp_pi)
-    inst.span.print_aa()
-    print(inst.value)
-
-    inst, inp_pi = String.parse_one(inp_pi)
-    inst.span.print_aa()
-    print(inst.value)
-
-    inst, inp_pi = Comment.parse_one(inp_pi)
-    inst.span.print_aa()
-
-    inst, inp_pi = AssemblyInstructionToken.parse_one(inp_pi)
-    inst.span.print_aa()
+    for thing in parse_all(inp_pi):
+        print(thing)
+        thing.span.print_aa()
+        print()
 except ParseException as p:
     print("Error:", p.reason)
     p.span.print_aa()
