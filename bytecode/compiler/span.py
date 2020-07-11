@@ -8,11 +8,22 @@ class Span:
     def __init__(self, start, end, source):
         self.start = start
         self.end = end
+        self.source = source
         self.source_lines = source.split("\n")
 
     def combine(self, other):
         if self.end == other.start and self.source_lines == other.source_lines:
-            return Span(self.start, other.end, self.source_lines)
+            return Span(self.start, other.end, self.source)
+        else:
+            raise ValueError(f"Incompatible spans: {self} and {other}")
+
+    def __str__(self):
+        return f"Span(start={self.start}, end={self.end}, source hash={hex(hash(self.source))})"
+
+    __repr__ = __str__
+
+    def get(self):
+        return self.source[self.start:self.end]
 
     def print_aa(self):
         # Find start line

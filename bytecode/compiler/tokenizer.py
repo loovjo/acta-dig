@@ -99,10 +99,58 @@ class Comment(Token):
 
         return Comment(comment_syntax.span.combine(comment.span)), inp
 
-inp_text = "; hello world \n yo yo"
+class Char(Token):
+    def __init__(self, span, value):
+        super(Char, self).__init__(span)
+        self.value = value
+
+    ESCAPE_TABLE = {
+        "n": "\n",
+        "t": "\t",
+        "\\": "\\",
+        "'": "'",
+        # TODO: Add more?
+    }
+    def parse_one(inp):
+        ch, inp = inp.pop()
+        if ch.get() == '\\':
+            next, inp = inp.pop()
+            if next.get() in Char.ESCAPE_TABLE:
+                return Char(ch.combine(next), Char.ESCAPE_TABLE[next.get()]), inp
+            else:
+                lst = ["\\" + ch for ch in Char.ESCAPE_TABLE.keys()]
+                raise ParseException(f"Expected any of {', '.join(lst)}", ch.combine(next))
+        else:
+            return Char(ch, ch.get()), inp
+
+class String(Token):
+    def __init__(self, span, value):
+        super(String, self).__init__(span)
+        self.value = value
+
+    START_END = find_exact("'")
+    def parse_one(inp):
+        start, inp = String.START_END.parse_one(inp)
+        span = start.span
+
+        value = ''
+        while True:
+            try:
+                end, inp = String.START_END.parse_one(inp)
+                span = span.combine(end.span)
+                break
+            except ParseException as _:
+                ch, inp = Char.parse_one(inp)
+                span = span.combine(ch.span)
+                value += ch.value
+
+        return String(span, value), inp
+
+
+inp_text = r"'hello\nworld' yo"
 inp_pi = ParseInput(inp_text)
 try:
-    inst, inp_pi = Comment.parse_one(inp_pi)
+    inst, inp_pi = String.parse_one(inp_pi)
     inst.span.print_aa()
 
     inst, inp_pi = AssemblyInstructionToken.parse_one(inp_pi)
