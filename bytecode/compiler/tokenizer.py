@@ -107,6 +107,22 @@ class AssemblyInstructionToken(Token):
 
         return AssemblyInstructionToken(span, span.get()), inp
 
+class Register(Token):
+    def __init__(self, span, reg_idx):
+        super(Register, self).__init__(span)
+        self.reg_idx = reg_idx
+
+    LETTER_R = find_exact("r")
+    @spaced
+    def parse_one(inp):
+        span, inp = Register.LETTER_R(inp)
+        reg_idx, inp = Integer.parse_one(inp)
+
+        if 0 <= reg_idx.value < 256:
+            return Register(span.combine(reg_idx.span), reg_idx.value), inp
+        else:
+            raise ParseException("Register outside range 0-255", reg_idx.span)
+
 class Comment(Token):
     CommentStart = find_exact(";")
     UntilEOL = take_while(lambda x: x != "\n")
@@ -207,7 +223,7 @@ class Float(Token):
         return Float(span, value), inp
 
 priority_order = [
-    Float, Integer, String, AssemblyInstructionToken, Comment,
+    Register, Float, Integer, String, AssemblyInstructionToken, Comment,
 ]
 
 def parse_one(inp):
@@ -225,10 +241,13 @@ def parse_all(inp):
         return []
 
     thing, inp  = parse_one(inp)
+    print("Parsed", thing)
+    thing.span.print_aa()
     rest = parse_all(inp)
     return [thing] + rest
 
 inp_text = r"""
+r55
 7.5
 123
 'hello\'123\n'
