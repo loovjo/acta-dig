@@ -142,10 +142,13 @@ class Macro(Token):
         self.macro_name = macro_name
 
     PARSE_MACRO = take_while(lambda ch: ch in "abcdefghijklmnopqrstuvwxyz_=", "Expected token")
-    @spaced
     def parse_one(inp):
+        _, inp = parse_spaces(inp)
         span, inp = find_exact("@")(inp)
         macro_name, inp = Macro.PARSE_MACRO(inp)
+
+        if macro_name.get()[-1] != '=':
+            _, inp = parse_spaces1(inp)
 
         return Macro(span.combine(macro_name), macro_name.get()), inp
 
@@ -169,6 +172,7 @@ class Comment(Token):
     CommentStart = find_exact(";")
     UntilEOL = take_while(lambda x: x != "\n", "Expected newline")
 
+    @spaced
     def parse_one(inp):
         comment_syntax, inp = Comment.CommentStart(inp)
         comment, inp = Comment.UntilEOL(inp)
@@ -205,7 +209,7 @@ class String(Token):
         self.value = value
 
     START_END = find_exact("'")
-    @spaced_light
+    @spaced
     def parse_one(inp):
         span, inp = String.START_END(inp)
 
