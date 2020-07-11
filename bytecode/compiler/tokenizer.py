@@ -290,14 +290,15 @@ def parse_all(inp):
     rest = parse_all(inp)
     return [thing] + rest
 
-inp_text = open("../test.dig").read()
-inp_pi = ParseInput(inp_text)
-try:
-    for thing in parse_all(inp_pi):
-        print(thing)
-        thing.span.print_aa()
-        print()
-except ParseException as p:
-    print("Error:", p.reason)
-    p.span.print_aa()
-    raise p
+if __name__ == "__main__":
+    inp_text = open("../test.dig").read()
+    inp_pi = ParseInput(inp_text)
+    try:
+        for thing in parse_all(inp_pi):
+            print(thing)
+            thing.span.print_aa()
+            print()
+    except ParseException as p:
+        print("Error:", p.reason)
+        p.span.print_aa()
+        raise p
