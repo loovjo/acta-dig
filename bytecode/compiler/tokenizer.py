@@ -40,7 +40,7 @@ class Token(ABC):
         pass
 
     def __str__(self):
-        return __repr__(self)
+        return repr(self)
 
 def map_res(res_wrapper, parse_fn):
     def parse_one(inp):
