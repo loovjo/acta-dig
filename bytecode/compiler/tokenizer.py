@@ -197,7 +197,7 @@ class Float(Token):
                 break
 
         if value is None:
-            raise ParseError("Expected float", Span(inp.cursor, inp.cursor + 1, inp.file_cont))
+            raise ParseException("Expected float", Span(inp.cursor, inp.cursor + 1, inp.file_cont))
 
         span = Span(inp.cursor, inp.cursor + longest_flength, inp.file_cont)
         inp.cursor += longest_flength
