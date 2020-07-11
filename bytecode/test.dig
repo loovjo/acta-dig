@@ -43,7 +43,7 @@
     set_float r1 0.0 ; delay
     send_message r0 r1 @='get-counter_idx' 2
         r0 ; response address
-        @='set-counter-increased_idx ; response atom
+        @='set-counter-increased_idx' ; response atom
 
 @end 'increase-counter'
 
