@@ -1,7 +1,7 @@
 # Bytecode assembly
 
 Instructions are from vm.txt. Arguments are specified after intstructions. Registers are specified
-like "r34". The pseudoinstruction "dump", taking a list of numbers as input, writes those numbers
+like "r34". The pseudoinstruction "dw", taking a list of numbers as input, writes those numbers
 directly to the file.
 
 Variables in the assembler are not true variables in the sense that they cannot be reassigned.
