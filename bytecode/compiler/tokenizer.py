@@ -146,57 +146,57 @@ class AssemblyInstructionToken(Token):
     def __repr__(self):
         return f"AssemblyInstructionToken(inst={repr(self.inst)}"
 
-class Macro(Token):
+class MacroToken(Token):
     def __init__(self, span, macro_name):
-        super(Macro, self).__init__(span)
+        super(MacroToken, self).__init__(span)
         self.macro_name = macro_name
 
     PARSE_MACRO = take_while(lambda ch: ch in "abcdefghijklmnopqrstuvwxyz_=", "Expected token")
     def parse_one(inp):
         _, inp = parse_spaces(inp)
         span, inp = find_exact("@")(inp)
-        macro_name, inp = Macro.PARSE_MACRO(inp)
+        macro_name, inp = MacroToken.PARSE_MACRO(inp)
 
         if macro_name.get()[-1] != '=':
             _, inp = parse_spaces1(inp)
 
-        return Macro(span.combine(macro_name), macro_name.get()), inp
+        return MacroToken(span.combine(macro_name), macro_name.get()), inp
 
     def __repr__(self):
-        return f"Macro(inst={repr(self.macro_name)}"
+        return f"MacroToken(inst={repr(self.macro_name)}"
 
-class Register(Token):
+class RegisterToken(Token):
     def __init__(self, span, reg_idx):
-        super(Register, self).__init__(span)
+        super(RegisterToken, self).__init__(span)
         self.reg_idx = reg_idx
 
     LETTER_R = find_exact("r")
     @spaced
     def parse_one(inp):
-        span, inp = Register.LETTER_R(inp)
+        span, inp = RegisterToken.LETTER_R(inp)
         (ispan, reg_idx), inp = parse_int(inp)
 
         if 0 <= reg_idx < 256:
-            return Register(span.combine(ispan), reg_idx), inp
+            return RegisterToken(span.combine(ispan), reg_idx), inp
         else:
             raise ParseException("Register outside range 0-255", ispan)
 
     def __repr__(self):
-        return f"Register(reg≈idx={self.reg_idx}"
+        return f"RegisterToken(reg≈idx={self.reg_idx}"
 
-class Comment(Token):
-    CommentStart = find_exact(";")
+class CommentToken(Token):
+    CommentTokenStart = find_exact(";")
     UntilEOL = take_while(lambda x: x != "\n", "Expected newline")
 
     @spaced
     def parse_one(inp):
-        comment_syntax, inp = Comment.CommentStart(inp)
-        comment, inp = Comment.UntilEOL(inp)
+        comment_syntax, inp = CommentToken.CommentTokenStart(inp)
+        comment, inp = CommentToken.UntilEOL(inp)
 
-        return Comment(comment_syntax.combine(comment)), inp
+        return CommentToken(comment_syntax.combine(comment)), inp
 
     def __repr__(self):
-        return f"Comment"
+        return f"CommentToken"
 
 class Char(Token):
     def __init__(self, span, value):
@@ -225,20 +225,20 @@ class Char(Token):
     def __repr__(self):
         return f"Char(value={repr(self.value)}"
 
-class String(Token):
+class StringToken(Token):
     def __init__(self, span, value):
-        super(String, self).__init__(span)
+        super(StringToken, self).__init__(span)
         self.value = value
 
     START_END = find_exact("'")
     @spaced
     def parse_one(inp):
-        span, inp = String.START_END(inp)
+        span, inp = StringToken.START_END(inp)
 
         value = ''
         while True:
             try:
-                end, inp = String.START_END(inp)
+                end, inp = StringToken.START_END(inp)
                 span = span.combine(end)
                 break
             except ParseException as _:
@@ -246,29 +246,29 @@ class String(Token):
                 span = span.combine(ch.span)
                 value += ch.value
 
-        return String(span, value), inp
+        return StringToken(span, value), inp
 
     def __repr__(self):
-        return f"String(value={repr(self.value)}"
+        return f"StringToken(value={repr(self.value)}"
 
-class Integer(Token):
+class IntegerToken(Token):
     def __init__(self, span, value):
-        super(Integer, self).__init__(span)
+        super(IntegerToken, self).__init__(span)
         self.value = value
 
     @spaced
     def parse_one(inp):
         (span, number), inp = parse_int(inp)
 
-        return Integer(span, number), inp
+        return IntegerToken(span, number), inp
 
     def __repr__(self):
-        return f"Integer(value={self.value}"
+        return f"IntegerToken(value={self.value}"
 
 
-class Float(Token):
+class FloatToken(Token):
     def __init__(self, span, value):
-        super(Float, self).__init__(span)
+        super(FloatToken, self).__init__(span)
         self.value = value
 
     @spaced
@@ -294,13 +294,13 @@ class Float(Token):
         span = Span(inp.cursor, inp.cursor + longest_flength, inp.file_cont)
         inp.cursor += longest_flength
 
-        return Float(span, value), inp
+        return FloatToken(span, value), inp
 
     def __repr__(self):
-        return f"Float(value={self.value}"
+        return f"FloatToken(value={self.value}"
 
 priority_order = [
-    Macro, Register, Float, Integer, String, AssemblyInstructionToken, Comment,
+    MacroToken, RegisterToken, FloatToken, IntegerToken, StringToken, AssemblyInstructionToken, CommentToken,
 ]
 
 def parse_one(inp):
