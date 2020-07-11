@@ -272,17 +272,15 @@ priority_order = [
 ]
 
 def parse_one(inp):
-    exceptions = []
+    furthest_exception = None
     for thing in priority_order:
         try:
             return thing.parse_one(inp)
         except ParseException as x:
-            exceptions.append(x)
+            if furthest_exception is None or furthest_exception.span.end < x.span.end:
+                furthest_exception = x
 
-    raise ParseException(
-        ", ".join([exception.reason for exception in exceptions]),
-        exceptions[0].span, # TODO: fix
-    )
+    raise furthest_exception
 
 def parse_all(inp):
     if inp.cursor == len(inp.file_cont):
