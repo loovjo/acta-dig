@@ -144,7 +144,7 @@ class AssemblyInstructionToken(Token):
         return AssemblyInstructionToken(span, span.get()), inp
 
     def __repr__(self):
-        return f"AssemblyInstructionToken(inst={repr(self.inst)}"
+        return f"AssemblyInstructionToken(inst={repr(self.inst)})"
 
 class MacroToken(Token):
     def __init__(self, span, macro_name):
@@ -163,7 +163,7 @@ class MacroToken(Token):
         return MacroToken(span.combine(macro_name), macro_name.get()), inp
 
     def __repr__(self):
-        return f"MacroToken(inst={repr(self.macro_name)}"
+        return f"MacroToken(inst={repr(self.macro_name)})"
 
 class RegisterToken(Token):
     def __init__(self, span, reg_idx):
@@ -182,7 +182,7 @@ class RegisterToken(Token):
             raise ParseException("Register outside range 0-255", ispan)
 
     def __repr__(self):
-        return f"RegisterToken(reg≈idx={self.reg_idx}"
+        return f"RegisterToken(reg_idx={self.reg_idx})"
 
 class CommentToken(Token):
     CommentTokenStart = find_exact(";")
@@ -223,7 +223,7 @@ class Char(Token):
             return Char(ch, ch.get()), inp
 
     def __repr__(self):
-        return f"Char(value={repr(self.value)}"
+        return f"Char(value={repr(self.value)})"
 
 class StringToken(Token):
     def __init__(self, span, value):
@@ -249,7 +249,7 @@ class StringToken(Token):
         return StringToken(span, value), inp
 
     def __repr__(self):
-        return f"StringToken(value={repr(self.value)}"
+        return f"StringToken(value={repr(self.value)})"
 
 class IntegerToken(Token):
     def __init__(self, span, value):
@@ -263,7 +263,7 @@ class IntegerToken(Token):
         return IntegerToken(span, number), inp
 
     def __repr__(self):
-        return f"IntegerToken(value={self.value}"
+        return f"IntegerToken(value={self.value})"
 
 
 class FloatToken(Token):
@@ -297,7 +297,7 @@ class FloatToken(Token):
         return FloatToken(span, value), inp
 
     def __repr__(self):
-        return f"FloatToken(value={self.value}"
+        return f"FloatToken(value={self.value})"
 
 priority_order = [
     MacroToken, RegisterToken, FloatToken, IntegerToken, StringToken, AssemblyInstructionToken, CommentToken,
