@@ -1,4 +1,4 @@
-from tokenizer import Register, String, Integer, Float
+from values import Register, String, Integer, Float
 
 class Instruction:
     def __init__(self, mnemonic, bytecode_byte):
@@ -35,5 +35,9 @@ INSTRUCTIONS = \
     , Instruction("generate_atom", 0x05)
         .verify("needs one argument", lambda args: len(args) == 1))
         .verify("argument one has to be register", lambda args: isinstance(args[0], Register))
+    , Instruction("integer_to_atom", 0x05)
+        .verify("needs one argument", lambda args: len(args) == 1))
+        .verify("argument one has to be register", lambda args: isinstance(args[0], Register))
     # TODO: More instructions
     ]
+
