@@ -1,0 +1,61 @@
+@= 'c_prefs'
+
+@pref 'start'
+@pref 'get-counter'
+@pref 'increase-counter'
+@pref 'set-counter-increased'
+
+
+@program 'start'
+
+    ; Assign handlers
+    add_handler @='start_idx' @='start' 0
+
+    set_integer r0 0
+    add_handler @='get-counter_idx' @='get-counter' 1
+        r255 r0
+
+    add_handler @='increase-counter_idx' @='increase-counter' 0
+
+    add_handler @='set-counter-increased_idx' @='set-counter-increased' 0
+
+
+@end 'start'
+
+@program 'get-counter'
+    ; Takes arguments
+    ;   r0 = response address
+    ;   r1 = response atom
+
+    ; r255 = current value
+
+    set_float r2 0.0 ; delay
+    send_message r0 r2 r1 1
+        r255
+
+@end 'get-counter'
+
+@program 'increase-counter'
+    ; Takes no arguments
+
+    set_self_addr r0
+
+    set_float r1 0.0 ; delay
+    send_message r0 r1 @='get-counter_idx' 2
+        r0 ; response address
+        @='set-counter-increased_idx ; response atom
+
+@end 'increase-counter'
+
+@program 'set-counter-increased'
+    ; Takes arguments
+    ;   r0 = previous counter value
+
+    set_integer r1 1
+    add_int r0 r1
+
+    set_atom r1 @='increase_counter_idx'
+    add_handler r1 'increase_counter_idx' 1
+        r255 r0
+
+@end 'set-counter-increased'

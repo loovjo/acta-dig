@@ -1,0 +1,81 @@
+VM State = 256 registers, containing Data. In the future, a register set index could allow for more
+registers.
+
+On receiving a message, the n args are put into the n first registers. Every message handler can put
+arbitrary contents into all other registers.
+
+enum Data {
+    ActorAddr(u64),
+    Float(f64),
+    Integer(i64),
+    String(String),
+    Atom(Atom)
+}
+
+## Actor format:
+
+Every actor is built from some actor base, with every base specified by a file. The file has a
+format containing a number of bytecode programs which are later picked and chosen from to handle
+every message the actor receives.
+
+The actor file format has a structure starting with meta information specifying the start and en
+position of each bytecode program in the file, followed by some information about the actor itself
+and then the actual programs.
+
+The meta information starts with a 8-byte number which is the number of bytecode programs, followed
+by that many number of 8-byte pairs, specifying the start and end of each program in the file.
+
+## Bytecode intstructions: (imm-N is N bytes)
+
+=== Assignments
+
+    set_self_addr: 0x00 [destination:register]
+        Set destination to the current actor's address
+
+    set_float: 0x01 [destination:register] [float:imm-8]
+        Set destination to the specified float
+
+    set_integer: 0x02 [destination:register] [integer:imm-8]
+        Set destination to the specified integer
+
+    set_string: 0x03 [destination:register] [length:imm-8] [string:imm-length]
+        Set destination to the specified string
+
+    copy: 0x04 [destination:register] [source:register]
+        Set destination to source
+
+    generate_atom: 0x05 [destination:register]
+        Set destination to a randomly generated atom
+
+=== Integer operators
+
+    add_int: 0x10 [destination:register] [source:register]
+        destination += source
+
+    sub_int: 0x11 [destination:register] [source:register]
+        destination -= source
+
+    mul_int: 0x12 [destination:register] [source:register]
+        destination *= source
+
+=== Float operators:
+    TODO
+
+=== State handlers
+
+    send_message: 0x80 [receiver:register] [delay:register] [atom:register] [n_arguments:imm8]
+                      [argument_1:register] [argument_2:register] ... (count = n_arguments)
+
+        Send a message to the receiver.
+
+    add_handler: 0x81 [atom:register] [program:imm8] [n_preset_arguments:imm8]
+                     [preset_idx_1:register] [preset_value_1:register] ... (count = n_preset_arguments)
+
+        Add a new message handler. The code for the handler is the program'th bytecode program from
+        the actor base. For every preset n, register[preset_idx_n] = preset_value_n
+        If a handler for the atom already exists, it will be replaced.
+
+    remove_handler: 0x82 [atom:register]
+
+        Removes the handler corresponding to atom
+
