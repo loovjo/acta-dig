@@ -84,6 +84,9 @@ def compile_to_bytecode(instructions):
 
     return output
 
+def postproc_macro(output, macros):
+    for macro in macros:
+        macro.post_process(output)
 
 if __name__ == "__main__":
     inp_text = open("../test_1.dig").read()
@@ -99,5 +102,7 @@ if __name__ == "__main__":
     parsed = parse_instructions(parsed)
     print("\n".join(map(repr, parsed)))
     output = compile_to_bytecode(parsed)
+
+    postproc_macro(output, macros)
 
     print(repr(output))
