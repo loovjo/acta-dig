@@ -1,23 +1,26 @@
-dw 'functions'
+dw @=('functions')
 
-@declare_counter 'functions' 0
+@declare('functions' 0)
+@declare('atoms' 0)
 
-@count 'functions' 'start-atom'
-dw @= 'start'
-dw @= 'start_end'
+@inc('functions' 'start-func')
+@inc('atoms' 'start-atom')
+dw @=('start-start')
+dw @=('start-end')
 
-@count 'functions' 'hello-atom'
-dw @= 'hello'
-dw @= 'hello_end'
+@inc('functions' 'hello-func')
+@inc('atoms' 'hello-atom')
+dw @=('hello-start')
+dw @=('hello-end')
 
-@label 'start'
+@label('start-start')
 
     ; Assign handlers
-    set_integer r0 @= 'start-atom'
+    set_integer r0 @=('hello-atom')
     integer_to_atom r0
     add_handler
         r0 ; atom
-        1  ; program
+        @=('hello-func')  ; program
         0  ; preset count
 
     set_self_addr r1
@@ -28,12 +31,12 @@ dw @= 'hello_end'
         r0 ; atom
         0  ; argument count
 
-@label 'start_end'
+@label('start-end')
 
 
-@label 'hello'
+@label('hello-start')
 
-    set_integer r0 @= 'start-atom'
+    set_integer r0 @=('start-atom')
     integer_to_atom r0
     set_self_addr r1
     set_float r2 0.0
@@ -43,4 +46,4 @@ dw @= 'hello_end'
         r0 ; atom
         0  ; argument count
 
-@label 'hello_end'
+@label('hello-end')
