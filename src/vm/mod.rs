@@ -253,8 +253,6 @@ impl<'a> VMState<'a> {
 fn test_send_message() {
     let code = include_bytes!("send.act") as &[u8]; // Compiled from bytecode/examples/send.dig
 
-    println!("{:x?}", code);
-
     let io_state = IOState {
         self_addr: ActorAddr::random(),
     };
