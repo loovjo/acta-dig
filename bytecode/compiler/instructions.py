@@ -55,7 +55,7 @@ INSTRUCTION_PATTERNS = \
     , InstructionPattern("generate_atom", bytes([0x05]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
         .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
-    , InstructionPattern("integer_to_atom", bytes([0x05]))
+    , InstructionPattern("integer_to_atom", bytes([0x06]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
         .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
 
