@@ -1,0 +1,15 @@
+set_self_addr r0
+set_integer r1 50
+integer_to_atom r1
+
+set_integer r5 69
+set_integer r6 420
+
+send_message
+    r0 ; receiver
+    r2 ; delay
+    r1 ; atom
+    2 ; n_args
+        r5 r6
+
+
