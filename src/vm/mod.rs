@@ -217,7 +217,6 @@ impl<'a> VMState<'a> {
     }
 }
 
-
 #[test]
 fn test_send_message() {
     let code = include_bytes!("send.act") as &[u8]; // Compiled from bytecode/examples/send.dig
@@ -229,14 +228,23 @@ fn test_send_message() {
     };
     let mut vm = VMState::new(code);
 
-    for _ in 0..1000 { // limit after 1000 cycles
+    for _ in 0..1000 {
+        // limit after 1000 cycles
         match vm.step_once(&io_state) {
             Ok(None) => continue,
+            Err(VMError::OutOfBounds) => {
+                break;
+            }
             Err(err) => {
                 assert!(false, "Unexpected error: {:?}", err);
             }
-            Ok(Some(x)) => {
-                break;
+            Ok(Some(IO::SendMessage { to, atom, values })) => {
+                assert_eq!(to, io_state.self_addr);
+                assert_eq!(atom, Atom(50));
+                assert_eq!(values, vec![Value::Number(69), Value::Number(420)]);
+            }
+            Ok(Some(io)) => {
+                assert!(false, "Unexpected IO: {:?}", io);
             }
         }
     }
