@@ -28,11 +28,11 @@ pub struct Message {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct MessageContent {
     pub atom: Atom,
-    pub data: Vec<Argument>,
+    pub data: Vec<Value>,
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
-pub enum Argument {
+pub enum Value {
     ActorAddr(ActorAddr),
     Number(i32),
     String(String),

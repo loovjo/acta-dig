@@ -14,7 +14,7 @@ impl acting::Actor for IOActor {
             (Self::PRINT_HELLO, &[]) => {
                 println!("Hello");
             }
-            (Self::PRINT_MSG, &[messages::Argument::String(ref msg)]) => {
+            (Self::PRINT_MSG, &[messages::Value::String(ref msg)]) => {
                 println!("{}", msg);
             }
             _ => {}

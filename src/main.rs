@@ -23,8 +23,8 @@ fn main() {
         cont: messages::MessageContent {
             atom: ATOM_START,
             data: vec![
-                messages::Argument::ActorAddr(io_addr),
-                messages::Argument::Atom(io_actor::IOActor::PRINT_MSG),
+                messages::Value::ActorAddr(io_addr),
+                messages::Value::Atom(io_actor::IOActor::PRINT_MSG),
             ],
         },
         arrive_after: None,
@@ -38,12 +38,12 @@ fn construct_dyn() -> dyn_actor::DynActor {
 
     let fn_1 = move |msg_content: messages::MessageContent, mut context: acting::Context| {
         match &*msg_content.data {
-            &[messages::Argument::ActorAddr(io_addr), messages::Argument::Atom(ref atom)] => {
+            &[messages::Value::ActorAddr(io_addr), messages::Value::Atom(ref atom)] => {
                 context.push_msg(messages::Message {
                     to: io_addr,
                     cont: messages::MessageContent {
                         atom: *atom,
-                        data: vec![messages::Argument::String("Hello, world".to_string())],
+                        data: vec![messages::Value::String("Hello, world".to_string())],
                     },
                     arrive_after: Some(
                         std::time::Instant::now() + std::time::Duration::from_secs(1),
