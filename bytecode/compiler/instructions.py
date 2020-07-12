@@ -91,8 +91,8 @@ INSTRUCTION_PATTERNS = \
         .verify("argument three has to be integer", 2, lambda args: isinstance(args[2], Integer))
         .verify(
             "needs this many register-arguments",
-            3,
-            lambda args: len(args) == args[2].inner.value + 3
+            2,
+            lambda args: len(args) == args[2].inner.value * 2 + 3
         )
     , InstructionPattern("remove_handler", bytes([0x82]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
