@@ -106,3 +106,6 @@ if __name__ == "__main__":
     postproc_macro(output, macros)
 
     print(repr(output))
+
+    with open("/tmp/out.act", "wb") as out:
+        out.write(output.output)
