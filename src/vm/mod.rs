@@ -23,12 +23,6 @@ pub enum IO {
 }
 
 #[derive(Debug, Eq, PartialEq)]
-pub enum ValueType {
-    String,
-    Integer,
-}
-
-#[derive(Debug, Eq, PartialEq)]
 pub enum VMError {
     OutOfBounds,
     NoSuchInstruction(u8),
