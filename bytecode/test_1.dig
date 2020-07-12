@@ -1,14 +1,19 @@
-dw 2
+dw 'functions'
 
+@declare_counter 'functions' 0
+
+@count 'functions' 'start-atom'
 dw @= 'start'
 dw @= 'start_end'
+
+@count 'functions' 'hello-atom'
 dw @= 'hello'
 dw @= 'hello_end'
 
 @label 'start'
 
     ; Assign handlers
-    set_integer r0 0
+    set_integer r0 @= 'start-atom'
     integer_to_atom r0
     add_handler
         r0 ; atom
@@ -23,12 +28,12 @@ dw @= 'hello_end'
         r0 ; atom
         0  ; argument count
 
-
 @label 'start_end'
+
 
 @label 'hello'
 
-    set_integer r0 0
+    set_integer r0 @= 'start-atom'
     integer_to_atom r0
     set_self_addr r1
     set_float r2 0.0

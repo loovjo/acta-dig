@@ -19,15 +19,19 @@ Built in macros are:
 @label "name"
     Assigns the variable "name" to the current position in the output.
 
-@count "category" "name"
-    This sets the variable "name" to the current value of the counter of the category, then
-    increments it.
-
 @= "name"
     Expands into the value of the variable "name" as a 8-byte integer.
     This macro is only evaluated after the output is generated. It expands into a dummy 8-byte value
     and replaces it with the true value afterwards. This makes it possible to refer to a variable
     before it has been assigned.
+
+@declare-counter "name" start-value
+    Creates a counter with the specified value, starting at start-value. Declares the variable
+    "name" to be final value of the counter.
+
+@count "category" "name"
+    This sets the variable "name" to the current value of the counter of the category, then
+    increments it.
 
 @program "name"
     This macro expands into:
