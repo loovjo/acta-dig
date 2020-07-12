@@ -24,6 +24,20 @@ fn main() {
         .push_msg(messages::Message {
             to: dactor_addr,
             cont: messages::MessageContent {
+                atom: messages::Atom(0x333302), // increase-counter
+                data: vec![],
+            },
+            arrive_after: None,
+        });
+
+    while worker.step_once() {}
+
+    worker
+        .msg_queue
+        .make_ctx(messages::ActorAddr::random())
+        .push_msg(messages::Message {
+            to: dactor_addr,
+            cont: messages::MessageContent {
                 atom: messages::Atom(0x333301), // get-counter
                 data: vec![
                     messages::Value::ActorAddr(io_addr),
