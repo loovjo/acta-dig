@@ -12,35 +12,21 @@ a variable, 'c_' + "countername"
 
 Comments start with ";" and ends at the end of the line.
 
-Macros are specified by "@macro". Macros can only expand into arguments for instructions. For this
-reason, some macros have to be prefixed by '>'
+Macros are specified by "@macro".
 Built in macros are:
 
-@label "name"
+@label("name")
     Assigns the variable "name" to the current position in the output.
 
-@= "name"
+@=("name")
     Expands into the value of the variable "name" as a 8-byte integer.
     This macro is only evaluated after the output is generated. It expands into a dummy 8-byte value
     and replaces it with the true value afterwards. This makes it possible to refer to a variable
     before it has been assigned.
 
-@declare-counter "name" start-value
-    Creates a counter with the specified value, starting at start-value. Declares the variable
-    "name" to be final value of the counter.
+@declare("name" start-value)
+    Creates a variable with the specified value.
 
-@count "category" "name"
-    This sets the variable "name" to the current value of the counter of the category, then
-    increments it.
-
-@program "name"
-    This macro expands into:
-
-    @label "name"
-    @count "programs" "name" + '_idx'
-
-@end "name"
-    Expands into:
-
-    @label "name" ++ '_end'
+@inc("category-name" "variable-name")
+    Sets "variable-name" equal to "category-name", then increase "category-name"
 
