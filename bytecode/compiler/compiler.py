@@ -6,7 +6,7 @@ from macro import construct_macro, Macro
 
 import values
 
-from instructions import construct_instruction
+from instructions import construct_instruction, Instruction
 
 def preproc_tokens(token_list):
     return [token for token in token_list if not isinstance(token, CommentToken)]
@@ -57,12 +57,16 @@ def parse_instructions(element_list):
     result = []
     parsing_instruction = None
     for thing in element_list:
-        if isinstance(thing, AssemblyInstructionToken):
+        if isinstance(thing, AssemblyInstructionToken) or isinstance(thing, Instruction):
             if parsing_instruction is not None:
                 # Write previous
                 result.append(construct_instruction(*parsing_instruction))
                 parsing_instruction = None
-            parsing_instruction = (thing, [])
+            if isinstance(thing, AssemblyInstructionToken):
+                parsing_instruction = (thing, [])
+            else:
+                parsing_instruction = None
+                result.append(thing)
         else:
             if parsing_instruction is not None:
                 parsing_instruction[1].append(thing)
@@ -96,4 +100,4 @@ if __name__ == "__main__":
     print("\n".join(map(repr, parsed)))
     output = compile_to_bytecode(parsed)
 
-    print(output)
+    print(repr(output))
