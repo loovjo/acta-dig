@@ -18,23 +18,24 @@ impl ActorAddr {
         ActorAddr { addr: random() }
     }
 }
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Message {
     pub to: ActorAddr,
     pub cont: MessageContent,
     pub arrive_after: Option<Instant>,
 }
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct MessageContent {
     pub atom: Atom,
     pub data: Vec<Value>,
 }
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Value {
     ActorAddr(ActorAddr),
     Number(u64), // TODO: add another for i32
+    Float(f64),
     String(String),
     Atom(Atom),
 }

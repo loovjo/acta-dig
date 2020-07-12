@@ -2,7 +2,7 @@ use std::convert::TryInto;
 
 use crate::messages::{ActorAddr, Atom, Value};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum IO {
     SendMessage {
         to: ActorAddr,
@@ -22,7 +22,7 @@ pub enum IO {
     Exit,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum VMError {
     OutOfBounds,
     NoSuchInstruction(u8),
