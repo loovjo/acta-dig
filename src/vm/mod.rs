@@ -282,20 +282,6 @@ fn test_send_message() {
 
 #[test]
 fn test_self_modifier() {
-    /*
-     *  set_integer r0 400
-     *  integer_to_atom r0
-     *
-     *  set_integer r1 20
-     *  set_integer r2 30
-     *
-     *  add_handler
-     *      r0 ; atom
-     *      43 ; program
-     *      2 ; preset_count
-     *          r1 r1
-     *          r2 r2
-     */
     let code = include_bytes!("self-modifier.act") as &[u8]; // Compiled from bytecode/examples/send.dig
 
     let io_state = IOState {
