@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from tokenizer import MacroToken, MacroEndToken, AssemblyInstructionToken, CommentToken, ParseInput, parse_all
+from tokenizer import MacroToken, MacroEndToken, AssemblyInstructionToken, CommentToken, ParseInput, parse_all, ParseException
 
 from macro import construct_macro, Macro
 
@@ -88,8 +88,7 @@ def postproc_macro(output, macros):
     for macro in macros:
         macro.post_process(output)
 
-if __name__ == "__main__":
-    inp_text = open("../test_1.dig").read()
+def compile_script(inp_text):
     inp_pi = ParseInput(inp_text)
     tokens = parse_all(inp_pi)
     tokens = preproc_tokens(tokens)
@@ -107,5 +106,24 @@ if __name__ == "__main__":
 
     print(repr(output))
 
-    with open("/tmp/out.act", "wb") as out:
-        out.write(output.output)
+    return output.output
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) == 3:
+        inp_path = sys.argv[1]
+        out_path = sys.argv[2]
+
+        with open(inp_path, "r") as inp_f:
+            try:
+                out = compile_script(inp_f.read())
+                with open(out_path, "wb") as out_f:
+                    out_f.write(out)
+            except ParseException as e:
+                e.print_aa()
+                print(e.reason)
+                raise e
+    else:
+        print(f"Run as {sys.argv[0]} <input path> <output_path>")
