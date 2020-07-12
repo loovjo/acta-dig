@@ -34,10 +34,10 @@ pub struct MessageContent {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum Value {
     ActorAddr(ActorAddr),
-    Number(i32),
+    Number(u64), // TODO: add another for i32
     String(String),
     Atom(Atom),
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-pub struct Atom(pub u32);
+pub struct Atom(pub u64);
