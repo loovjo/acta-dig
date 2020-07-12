@@ -10,7 +10,6 @@ class CompileOutput:
     def __init__(self):
         self.output = b''
 
-        self.variables = {}
         self.tracked_ids = {}
 
     def write_bytes(self, b):
@@ -18,6 +17,12 @@ class CompileOutput:
         self.output = self.output + b
 
         return addr
+
+    def __str__(self):
+        return f"CompileOutput(output={self.output})"
+
+    def __repr__(self):
+        return f"CompileOutput(output={self.output}, tracked_ids={self.tracked_ids})"
 
 class Value(ABC):
     def __init__(self, inner):
@@ -32,7 +37,7 @@ class Value(ABC):
         return repr(self)
 
     def compile_to_bytecode(self, output):
-        addr = output.write(self.get_bytecode())
+        addr = output.write_bytes(self.get_bytecode())
         output.tracked_ids[self.track_id] = addr
 
     @abstractmethod
