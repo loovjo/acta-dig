@@ -131,6 +131,19 @@ impl<'a> Actor for Dactor<'a> {
     }
 
     fn debug_info<'di>(&'di self) -> Box<dyn DebugInfo + 'di> {
-        unimplemented!()
+        Box::new(DactorDebugInfo)
+    }
+}
+
+pub struct DactorDebugInfo;
+
+impl DebugInfo for DactorDebugInfo {
+    fn get_actor_name(&self) -> String {
+        "Dactor".to_string()
+    }
+    fn get_atom_name(&self, atom: Atom) -> Option<String> {
+        match atom {
+            _ => None,
+        }
     }
 }
