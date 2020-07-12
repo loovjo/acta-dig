@@ -334,6 +334,7 @@ def parse_one(inp):
     raise furthest_exception
 
 def parse_all(inp):
+    _, inp = parse_spaces(inp)
     if inp.cursor == len(inp.file_cont):
         return []
 
