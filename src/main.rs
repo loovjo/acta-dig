@@ -4,6 +4,8 @@ mod acting;
 mod actors;
 use actors::{dyn_actor, io_actor};
 
+mod vm;
+
 const ATOM_START: messages::Atom = messages::Atom(0);
 
 fn main() {
