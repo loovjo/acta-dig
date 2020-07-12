@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import struct
 
 from values import String, Integer, Float
 import tokenizer
@@ -80,7 +81,8 @@ class Eq(Macro):
         track_id = self.equal.track_id
         position = output.tracked_ids[track_id]
 
-        output.override_inside(position, value)
+        output.override_inside(position, struct.pack("Q", value))
+
 
 def construct_macro(macro_token, argument_tokens):
     if len(argument_tokens) == 0:
