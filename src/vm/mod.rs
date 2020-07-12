@@ -328,7 +328,8 @@ impl<'a> VMState<'a> {
 
 #[test]
 fn test_send_message() {
-    let code = include_bytes!("send.act") as &[u8]; // Compiled from bytecode/examples/send.dig
+    // Compiled from bytecode/examples/send.dig
+    let code = include_bytes!("test-compiled-files/send.act") as &[u8];
 
     let io_state = IOState {
         self_addr: ActorAddr::random(),
@@ -359,7 +360,8 @@ fn test_send_message() {
 
 #[test]
 fn test_self_modifier() {
-    let code = include_bytes!("self-modifier.act") as &[u8]; // Compiled from bytecode/examples/send.dig
+    // Compiled from bytecode/examples/send.dig
+    let code = include_bytes!("test-compiled-files/self-modifier.act") as &[u8];
 
     let io_state = IOState {
         self_addr: ActorAddr::random(),
