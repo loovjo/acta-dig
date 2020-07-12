@@ -20,6 +20,10 @@ class Macro(ABC):
     def into_pseudo_values(self):
         pass
 
+    @abstractmethod
+    def post_process(self, output):
+        pass
+
 class LabelPseudoInstruction(Instruction):
     def __init__(self, variable_name):
         super(LabelPseudoInstruction, self).__init__(bytes([]), [])
@@ -46,6 +50,9 @@ class Label(Macro):
     def into_pseudo_values(self):
         return [LabelPseudoInstruction(self.name)]
 
+    def post_process(self, output):
+        pass
+
 # TODO: Category counting
 
 class Eq(Macro):
@@ -61,6 +68,19 @@ class Eq(Macro):
 
     def into_pseudo_values(self):
         return [self.equal]
+
+    def post_process(self, output):
+        if self.name not in output.variables:
+            self.span.print_aa()
+            print("Variable not found")
+            exit()
+
+        value = output.variables[self.name]
+
+        track_id = self.equal.track_id
+        position = output.tracked_ids[track_id]
+
+        output.override_inside(position, value)
 
 def construct_macro(macro_token, argument_tokens):
     if len(argument_tokens) == 0:
