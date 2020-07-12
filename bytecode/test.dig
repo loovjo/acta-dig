@@ -1,28 +1,54 @@
-@= 'c_prefs'
+dw @=('functions')
 
-@pref 'start'
-@pref 'get-counter'
-@pref 'increase-counter'
-@pref 'set-counter-increased'
+@declare('functions' 0)
+@declare('atoms' 3355392) ; 0x333300
+
+@inc('functions' 'start-func')
+@inc('atoms' 'start-atom')
+dw @=('start-start')
+dw @=('start-end')
+
+@inc('functions' 'get-counter-func')
+@inc('atoms' 'get-counter-atom')
+dw @=('get-counter-start')
+dw @=('get-counter-end')
+
+@inc('functions' 'increase-counter-func')
+@inc('atoms' 'increase-counter-atom')
+dw @=('increase-counter-start')
+dw @=('increase-counter-end')
+
+@inc('functions' 'set-counter-increased-func')
+@inc('atoms' 'set-counter-increased-atom')
+dw @=('set-counter-increased-start')
+dw @=('set-counter-increased-end')
 
 
-@program 'start'
+@label('start-start')
 
     ; Assign handlers
-    add_handler @='start_idx' @='start' 0
+    set_integer r0 @=('start-atom')
+    integer_to_atom r0
+    add_handler r0 @=('start-func') 0
 
-    set_integer r0 0
-    add_handler @='get-counter_idx' @='get-counter' 1
-        r255 r0
+    set_integer r0 @=('get-counter-atom')
+    integer_to_atom r0
+    set_integer r255 0
+    add_handler r0 @=('get-counter-func') 1
+        r255 r255
 
-    add_handler @='increase-counter_idx' @='increase-counter' 0
+    set_integer r0 @=('increase-counter-atom')
+    integer_to_atom r0
+    add_handler r0 @=('increase-counter-func') 0
 
-    add_handler @='set-counter-increased_idx' @='set-counter-increased' 0
+    set_integer r0 @=('set-counter-increased-atom')
+    integer_to_atom r0
+    add_handler r0 @=('set-counter-increased-func') 0
+
+@label('start-end')
 
 
-@end 'start'
-
-@program 'get-counter'
+@label('get-counter-start')
     ; Takes arguments
     ;   r0 = response address
     ;   r1 = response atom
@@ -33,29 +59,34 @@
     send_message r0 r2 r1 1
         r255
 
-@end 'get-counter'
+@label('get-counter-end')
 
-@program 'increase-counter'
+
+@label('increase-counter-start')
     ; Takes no arguments
 
     set_self_addr r0
 
     set_float r1 0.0 ; delay
-    send_message r0 r1 @='get-counter_idx' 2
+
+    set_integer r2 @=('get-counter-atom')
+    integer_to_atom r2
+    send_message r0 r1 r2 2
         r0 ; response address
-        @='set-counter-increased_idx' ; response atom
+        @=('set-counter-increased-atom') ; response atom
 
-@end 'increase-counter'
+@label('increase-counter-end')
 
-@program 'set-counter-increased'
+@label('set-counter-increased-start')
     ; Takes arguments
     ;   r0 = previous counter value
 
     set_integer r1 1
     add_int r0 r1
 
-    set_atom r1 @='increase_counter_idx'
-    add_handler r1 'increase_counter_idx' 1
+    set_integer r1 @=('increase-counter-atom')
+    integer_to_atom r1
+    add_handler r1 @=('increase-counter-func') 1
         r255 r0
 
-@end 'set-counter-increased'
+@label('set-counter-increased-end')
