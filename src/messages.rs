@@ -41,3 +41,9 @@ pub enum Value {
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub struct Atom(pub u64);
+
+impl Atom {
+    pub fn random() -> Atom {
+        Atom(random())
+    }
+}
