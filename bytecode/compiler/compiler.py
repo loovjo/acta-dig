@@ -122,7 +122,7 @@ if __name__ == "__main__":
                 with open(out_path, "wb") as out_f:
                     out_f.write(out)
             except ParseException as e:
-                e.print_aa()
+                e.span.print_aa()
                 print(e.reason)
                 raise e
     else:
