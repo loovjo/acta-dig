@@ -118,4 +118,4 @@ def construct_instruction(assembly_instruction_token, arguments):
 
     assembly_instruction_token.span.print_aa()
     print("No such instruction!")
-    # exit()
+    exit()
