@@ -71,9 +71,12 @@ dw @=('set-counter-increased-end')
 
     set_integer r2 @=('get-counter-atom')
     integer_to_atom r2
+
+    set_integer r3 @=('set-counter-increased-atom')
+    integer_to_atom r3
     send_message r0 r1 r2 2
         r0 ; response address
-        @=('set-counter-increased-atom') ; response atom
+        r3 ; response atom
 
 @label('increase-counter-end')
 
@@ -84,9 +87,9 @@ dw @=('set-counter-increased-end')
     set_integer r1 1
     add_int r0 r1
 
-    set_integer r1 @=('increase-counter-atom')
+    set_integer r1 @=('get-counter-atom')
     integer_to_atom r1
-    add_handler r1 @=('increase-counter-func') 1
+    add_handler r1 @=('get-counter-func') 1
         r255 r0
 
 @label('set-counter-increased-end')
