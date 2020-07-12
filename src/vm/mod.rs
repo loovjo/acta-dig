@@ -283,6 +283,61 @@ fn test_send_message() {
 }
 
 #[test]
+fn test_self_modifier() {
+    /*
+     *  set_integer r0 400
+     *  integer_to_atom r0
+     *
+     *  set_integer r1 20
+     *  set_integer r2 30
+     *
+     *  add_handler
+     *      r0 ; atom
+     *      43 ; program
+     *      2 ; preset_count
+     *          r1 r1
+     *          r2 r2
+     */
+    let code = include_bytes!("self-modifier.act") as &[u8]; // Compiled from bytecode/examples/send.dig
+
+    let io_state = IOState {
+        self_addr: ActorAddr::random(),
+    };
+    let mut vm = VMState::new(code);
+
+    for _ in 0..1000 {
+        // limit after 1000 cycles
+        match vm.step_once(&io_state) {
+            Ok(None) => continue,
+            Err(VMError::OutOfBounds) => {
+                break;
+            }
+            Err(err) => {
+                assert!(false, "Unexpected error: {:?}", err);
+            }
+            Ok(Some(IO::AddHandler {
+                atom,
+                program,
+                presets,
+            })) => {
+                assert_eq!(atom, Atom(400));
+                assert_eq!(program, 43);
+                assert_eq!(
+                    presets,
+                    vec![(1, Value::Number(20)), (2, Value::Number(30)),]
+                );
+            }
+            Ok(Some(IO::RemoveHandler { atom })) => {
+                assert_eq!(atom, Atom(400));
+            }
+            Ok(Some(io)) => {
+                assert!(false, "Unexpected IO: {:?}", io);
+            }
+        }
+    }
+}
+
+#[test]
 fn test_intops() {
     // set_integer r0 20
     // set_integer r1 30
