@@ -96,16 +96,11 @@ def compile_script(inp_text):
     parsed = upgrade_values(parsed)
 
     parsed, macros = pseudo_expand_macros(parsed)
-    print("\n".join(map(repr, macros)))
 
     parsed = parse_instructions(parsed)
-    print("\n".join(map(repr, parsed)))
     output = compile_to_bytecode(parsed)
 
     postproc_macro(output, macros)
-
-    print(repr(output))
-
     return output.output
 
 
