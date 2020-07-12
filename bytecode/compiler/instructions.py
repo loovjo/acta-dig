@@ -108,7 +108,7 @@ def construct_instruction(assembly_instruction_token, arguments):
                 if not verifier(arguments):
                     span = assembly_instruction_token.span
                     if displayer == DISPLAY_ALL and len(arguments) > 0:
-                        span = arguments[0].span.combine_nonadjacent(arguments[-1].span)
+                        span = arguments[0].inner.span.combine_nonadjacent(arguments[-1].inner.span)
                     elif displayer < len(arguments):
                         span = arguments[displayer].inner.span
                     span.print_aa()
