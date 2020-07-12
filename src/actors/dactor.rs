@@ -127,7 +127,8 @@ impl<'a> Actor for Dactor<'a> {
             return;
         };
 
-        handler.handle(self.base, message, Some(ctx));
+        let handler_response = handler.handle(self.base, message, Some(ctx));
+        self.handle_handler_response(handler_response);
     }
 
     fn debug_info<'di>(&'di self) -> Box<dyn DebugInfo + 'di> {
