@@ -44,6 +44,7 @@ class Span:
 
         # Find start line
         line_end = 0
+        end_line = len(self.source_lines) - 1
         for i, line in enumerate(self.source_lines):
             line += "\n"
 
