@@ -74,7 +74,7 @@ impl Worker {
                             "Sending {}({:?}) to {:?}/{:?}",
                             atom_name
                                 .map(|x| format!("{:?}", x))
-                                .unwrap_or("UNK".to_string()),
+                                .unwrap_or(format!("UNK-0x{:x}", cont.atom.0)),
                             cont.data,
                             actor_name,
                             to,
