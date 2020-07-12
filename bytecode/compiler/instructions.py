@@ -22,6 +22,11 @@ class Instruction:
     def __str__(self):
         return f"Instruction(bytecode={self.bytecode}, arguments={self.arguments})"
 
+    def compile_to_bytecode(self, output):
+        output.write_bytes(self.bytecode)
+        for argument in self.arguments:
+            argument.compile_to_bytecode(output)
+
     __repr__ = __str__
 
 INSTRUCTION_PATTERNS = \
@@ -73,14 +78,25 @@ INSTRUCTION_PATTERNS = \
         .verify("argument two has to be register", 1, lambda args: isinstance(args[1], Register))
         .verify("argument three has to be register", 2, lambda args: isinstance(args[2], Register))
         .verify("argument four has to be int", 3, lambda args: isinstance(args[3], Integer))
-        .verify("needs this many register-arguments", 3, lambda args: len(args) == args[3].inner.value + 4)
+        .verify(
+            "needs this many register-arguments",
+            3,
+            lambda args: len(args) == args[3].inner.value + 4
+        )
         # TODO: Check that all register-arguments are registers, with good errors
     , InstructionPattern("add_handler", bytes([0x81]))
         .verify("needs at least 3 arguments", DISPLAY_ALL, lambda args: len(args) >= 3)
         .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
         .verify("argument two has to be integer", 1, lambda args: isinstance(args[1], Integer))
         .verify("argument three has to be integer", 2, lambda args: isinstance(args[2], Integer))
-        .verify("needs this many register-arguments", 3, lambda args: len(args) == args[2].inner.value + 3)
+        .verify(
+            "needs this many register-arguments",
+            3,
+            lambda args: len(args) == args[2].inner.value + 3
+        )
+    , InstructionPattern("remove_handler", bytes([0x82]))
+        .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
+        .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
         # TODO: Check that all register-arguments are registers, with good errors
     # TODO: More instructions
     ]
