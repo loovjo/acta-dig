@@ -17,7 +17,7 @@ pub enum IO {
     RemoveHandler {
         atom: Atom,
     },
-    Exit,
+    Done,
 }
 
 #[derive(Debug, PartialEq)]

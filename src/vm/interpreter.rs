@@ -1,13 +1,13 @@
 use std::convert::TryInto;
 
-use crate::messages::{ActorAddr, Atom, Value};
 use super::types::*;
+use crate::messages::{ActorAddr, Atom, Value};
 
 pub struct VMState<'a> {
     instructions: &'a [u8],
     instruction_pointer: usize,
 
-    registers: [Value; 256],
+    pub registers: [Value; 256],
 }
 
 impl<'a> VMState<'a> {
@@ -67,7 +67,12 @@ impl<'a> VMState<'a> {
     }
 
     pub fn step_once(&mut self, io_state: &IOState) -> Result<Option<IO>, VMError> {
-        match self.read_u8()? {
+        let inst = match self.read_u8() {
+            Ok(inst) => inst,
+            Err(VMError::OutOfBounds) => return Ok(Some(IO::Done)),
+            Err(e) => return Err(e),
+        };
+        match inst {
             0x00 => {
                 // set_self_addr
                 let reg = self.read_u8()?;
@@ -307,12 +312,7 @@ fn test_send_message() {
         // limit after 1000 cycles
         match vm.step_once(&io_state) {
             Ok(None) => continue,
-            Err(VMError::OutOfBounds) => {
-                break;
-            }
-            Err(err) => {
-                assert!(false, "Unexpected error: {:?}", err);
-            }
+            Ok(Some(IO::Done)) => break,
             Ok(Some(IO::SendMessage { to, atom, values })) => {
                 assert_eq!(to, io_state.self_addr);
                 assert_eq!(atom, Atom(50));
@@ -320,6 +320,9 @@ fn test_send_message() {
             }
             Ok(Some(io)) => {
                 assert!(false, "Unexpected IO: {:?}", io);
+            }
+            Err(err) => {
+                assert!(false, "Unexpected error: {:?}", err);
             }
         }
     }
@@ -339,12 +342,7 @@ fn test_self_modifier() {
         // limit after 1000 cycles
         match vm.step_once(&io_state) {
             Ok(None) => continue,
-            Err(VMError::OutOfBounds) => {
-                break;
-            }
-            Err(err) => {
-                assert!(false, "Unexpected error: {:?}", err);
-            }
+            Ok(Some(IO::Done)) => continue,
             Ok(Some(IO::AddHandler {
                 atom,
                 program,
@@ -362,6 +360,9 @@ fn test_self_modifier() {
             }
             Ok(Some(io)) => {
                 assert!(false, "Unexpected IO: {:?}", io);
+            }
+            Err(err) => {
+                assert!(false, "Unexpected error: {:?}", err);
             }
         }
     }
