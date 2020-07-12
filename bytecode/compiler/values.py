@@ -19,6 +19,9 @@ class CompileOutput:
 
         return addr
 
+    def override_inside(self, at, b):
+        self.output = self.output[:at] + b + self.output[at+len(b):]
+
     def __str__(self):
         return f"CompileOutput(output={self.output})"
 
