@@ -24,8 +24,8 @@ impl MessageQueue {
         self.inner.pop_back()
     }
 
-    pub fn make_ctx<'a>(&'a mut self) -> Context<'a> {
-        Context { msg_queue: self }
+    pub fn make_ctx<'a>(&'a mut self, self_addr: ActorAddr) -> Context<'a> {
+        Context { msg_queue: self, self_addr }
     }
 }
 
@@ -80,7 +80,7 @@ impl Worker {
                             to,
                         );
                     }
-                    let ctx = self.msg_queue.make_ctx();
+                    let ctx = self.msg_queue.make_ctx(to);
                     act.handle_message(cont, ctx);
                     true
                 } else {
@@ -100,6 +100,7 @@ impl Worker {
 // TODO: Properly abstract this to handle multiple workers
 pub struct Context<'a> {
     msg_queue: &'a mut MessageQueue,
+    pub self_addr: ActorAddr,
 }
 
 impl<'a> Context<'a> {

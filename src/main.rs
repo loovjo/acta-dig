@@ -20,7 +20,7 @@ fn main() {
     eprintln!("Registered io actor at {:?}", io_addr);
     eprintln!("Registered dyn actor at {:?}", dyn_addr);
 
-    worker.msg_queue.make_ctx().push_msg(messages::Message {
+    worker.msg_queue.make_ctx(messages::ActorAddr::random()).push_msg(messages::Message {
         to: dyn_addr,
         cont: messages::MessageContent {
             atom: ATOM_START,
