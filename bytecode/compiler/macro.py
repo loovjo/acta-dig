@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from values import String, Integer, Float
 import tokenizer
 
+from instructions import Instruction
+
 class Macro(ABC):
     def __init__(self, span):
         self.span = span
@@ -18,6 +20,20 @@ class Macro(ABC):
     def into_pseudo_values(self):
         pass
 
+class LabelPseudoInstruction(Instruction):
+    def __init__(self, variable_name):
+        super(LabelPseudoInstruction, self).__init__(bytes([]), [])
+
+        self.variable_name = variable_name
+
+    def compile_to_bytecode(self, output):
+        output.variables[self.variable_name] = len(output.output)
+
+    def __str__(self):
+        return f"LabelPseudoInstruction(variable_name={self.variable_name})"
+
+    __repr__ = __str__
+
 class Label(Macro):
     def __init__(self, span, name):
         super(Label, self).__init__(span)
@@ -28,7 +44,7 @@ class Label(Macro):
         return f"Label(name={repr(self.name)})"
 
     def into_pseudo_values(self):
-        return []
+        return [LabelPseudoInstruction(self.name)]
 
 # TODO: Category counting
 
