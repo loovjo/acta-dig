@@ -11,6 +11,7 @@ class CompileOutput:
         self.output = b''
 
         self.tracked_ids = {}
+        self.variables = {}
 
     def write_bytes(self, b):
         addr = len(self.output)
@@ -22,7 +23,7 @@ class CompileOutput:
         return f"CompileOutput(output={self.output})"
 
     def __repr__(self):
-        return f"CompileOutput(output={self.output}, tracked_ids={self.tracked_ids})"
+        return f"CompileOutput(output={self.output}, tracked_ids={self.tracked_ids}, variables={self.variables})"
 
 class Value(ABC):
     def __init__(self, inner):
