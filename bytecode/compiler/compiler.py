@@ -73,6 +73,13 @@ def parse_instructions(element_list):
 
     return result
 
+def compile_to_bytecode(instructions):
+    output = values.CompileOutput()
+    for inst in instructions:
+        inst.compile_to_bytecode(output)
+
+    return output
+
 
 if __name__ == "__main__":
     inp_text = open("../test_1.dig").read()
@@ -83,8 +90,10 @@ if __name__ == "__main__":
     parsed = upgrade_values(parsed)
 
     parsed, macros = pseudo_expand_macros(parsed)
-    parsed = parse_instructions(parsed)
-
-    print("\n".join(map(repr, parsed)))
-    print("--")
     print("\n".join(map(repr, macros)))
+
+    parsed = parse_instructions(parsed)
+    print("\n".join(map(repr, parsed)))
+    output = compile_to_bytecode(parsed)
+
+    print(output)
