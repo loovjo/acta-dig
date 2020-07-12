@@ -212,6 +212,38 @@ impl<'a> VMState<'a> {
 
                 Ok(Some(IO::SendMessage { to, atom, values }))
             }
+            0x81 => {
+                // add_handler
+                let atom = match self.registers[self.read_u8()? as usize] {
+                    Value::Atom(atom) => atom,
+                    ref val => return Err(VMError::WrongValueType(val.clone())),
+                };
+
+                let program = self.read_u64()?;
+
+                let n_presets = self.read_u64()? as usize;
+                let mut presets = Vec::with_capacity(n_presets);
+                for _ in 0..n_presets {
+                    let reg_idx = self.read_u8()?;
+                    let reg_value = self.registers[self.read_u8()? as usize].clone();
+                    presets.push((reg_idx, reg_value));
+                }
+
+                Ok(Some(IO::AddHandler {
+                    atom,
+                    program,
+                    presets,
+                }))
+            }
+            0x82 => {
+                // remove_handler
+                let atom = match self.registers[self.read_u8()? as usize] {
+                    Value::Atom(atom) => atom,
+                    ref val => return Err(VMError::WrongValueType(val.clone())),
+                };
+
+                Ok(Some(IO::RemoveHandler { atom }))
+            }
             unk_inst => Err(VMError::NoSuchInstruction(unk_inst)),
         }
     }
