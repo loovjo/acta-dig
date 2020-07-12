@@ -217,3 +217,125 @@ impl<'a> VMState<'a> {
     }
 }
 
+
+#[test]
+fn test_send_message() {
+    let code = include_bytes!("send.act") as &[u8]; // Compiled from bytecode/examples/send.dig
+
+    println!("{:x?}", code);
+
+    let io_state = IOState {
+        self_addr: ActorAddr::random(),
+    };
+    let mut vm = VMState::new(code);
+
+    for _ in 0..1000 { // limit after 1000 cycles
+        match vm.step_once(&io_state) {
+            Ok(None) => continue,
+            Err(err) => {
+                assert!(false, "Unexpected error: {:?}", err);
+            }
+            Ok(Some(x)) => {
+                break;
+            }
+        }
+    }
+}
+
+#[test]
+fn test_intops() {
+    // set_integer r0 20
+    // set_integer r1 30
+    // add_int r0 r1
+    // mul_int r0 r0
+    // sub_int r1 r1
+    #[rustfmt::skip]
+    let code = &[
+        0x02, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x02, 0x01, 0x1e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x10, 0x00, 0x01,
+        0x12, 0x00, 0x00,
+        0x11, 0x01, 0x01,
+    ];
+    let io_state = IOState {
+        self_addr: ActorAddr::random(),
+    };
+    let mut vm = VMState::new(code);
+
+    // set_integer r0 20
+    // set_integer r1 30
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Number(20), &Value::Number(30)),
+    );
+
+    // add_int r0 r1
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Number(50), &Value::Number(30)),
+    );
+
+    // mul_int r0 r0
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Number(2500), &Value::Number(30)),
+    );
+
+    // sub_int r1 r1
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Number(2500), &Value::Number(0)),
+    );
+}
+
+#[test]
+fn test_setters() {
+    // set_self_addr r5
+    // set_integer r3 20
+    // copy r4 r3
+    // integer_to_atom r3
+    // integer_to_atom r5 ; type error!
+    #[rustfmt::skip]
+    let code = &[
+        0x00, 0x05,
+        0x02, 0x03, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x04, 0x04, 0x03,
+        0x06, 0x03,
+        0x06, 0x05,
+    ];
+    let io_state = IOState {
+        self_addr: ActorAddr::random(),
+    };
+    let mut vm = VMState::new(code);
+
+    // set_self_addr r5
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.registers[5], Value::ActorAddr(io_state.self_addr));
+
+    // set_integer r3 20
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.registers[3], Value::Number(20));
+
+    // copy r4 r3
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.registers[4], vm.registers[3]);
+    assert_eq!(vm.registers[4], Value::Number(20));
+
+    // integer_to_atom r3
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.registers[3], Value::Atom(Atom(20)));
+
+    // integer_to_atom r5
+    assert_eq!(
+        vm.step_once(&io_state),
+        Err(VMError::WrongValueType(Value::ActorAddr(
+            io_state.self_addr
+        )))
+    );
+}
