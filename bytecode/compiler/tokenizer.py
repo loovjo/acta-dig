@@ -91,7 +91,13 @@ def take_while0(fn):
     return parse_one
 
 parse_spaces = take_while0(lambda x: x in " \n")
-parse_spaces1 = take_while(lambda x: x in " \n", "Expected space")
+
+NONBREAKING_CHARS = "abcdefghijklmnopqrstuvwxyz_0123456789"
+def parse_spaces1(inp):
+    if inp.peek().get() not in NONBREAKING_CHARS:
+        return Span(inp.cursor, inp.cursor, inp.file_cont), inp
+
+    return take_while(lambda x: x in " \n", "Expected space")(inp)
 
 def spaced(parse_fn):
     def parse_one(inp):
@@ -156,14 +162,27 @@ class MacroToken(Token):
         _, inp = parse_spaces(inp)
         span, inp = find_exact("@")(inp)
         macro_name, inp = MacroToken.PARSE_MACRO(inp)
-
-        if macro_name.get()[-1] != '=':
-            _, inp = parse_spaces1(inp)
+        _, inp = find_exact("(")(inp)
+        _, inp = parse_spaces(inp)
 
         return MacroToken(span.combine(macro_name), macro_name.get()), inp
 
     def __repr__(self):
         return f"MacroToken(inst={repr(self.macro_name)})"
+
+class MacroEndToken(Token):
+    def __init__(self, span):
+        super(MacroEndToken, self).__init__(span)
+
+    def parse_one(inp):
+        _, inp = parse_spaces(inp)
+        span, inp = find_exact(")")(inp)
+        _, inp = parse_spaces(inp)
+
+        return MacroEndToken(span), inp
+
+    def __repr__(self):
+        return f"MacroToken()"
 
 class RegisterToken(Token):
     def __init__(self, span, reg_idx):
@@ -300,7 +319,7 @@ class FloatToken(Token):
         return f"FloatToken(value={self.value})"
 
 priority_order = [
-    MacroToken, RegisterToken, FloatToken, IntegerToken, StringToken, AssemblyInstructionToken, CommentToken,
+    MacroToken, MacroEndToken, RegisterToken, FloatToken, IntegerToken, StringToken, AssemblyInstructionToken, CommentToken,
 ]
 
 def parse_one(inp):
@@ -323,7 +342,7 @@ def parse_all(inp):
     return [thing] + rest
 
 if __name__ == "__main__":
-    inp_text = open("../test.dig").read()
+    inp_text = open("../test_1.dig").read()
     inp_pi = ParseInput(inp_text)
     try:
         for thing in parse_all(inp_pi):

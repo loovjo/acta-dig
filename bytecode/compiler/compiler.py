@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from tokenizer import MacroToken, AssemblyInstructionToken, CommentToken, ParseInput, parse_all
+from tokenizer import MacroToken, MacroEndToken, AssemblyInstructionToken, CommentToken, ParseInput, parse_all
 
 from macro import construct_macro, Macro
 
@@ -20,14 +20,14 @@ def group_macros(token_list):
 
     for token in token_list:
         if macro_processing is not None:
-            if isinstance(token, MacroToken) or isinstance(token, AssemblyInstructionToken):
+            if isinstance(token, MacroEndToken):
                 result.append(construct_macro(*macro_processing))
 
                 macro_processing = None
             else:
                 macro_processing[1].append(token)
 
-        if macro_processing is None: # Outside macro
+        elif macro_processing is None: # Outside macro
             if isinstance(token, MacroToken):
                 macro_processing = (token, [])
             else:
