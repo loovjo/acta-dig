@@ -1,9 +1,10 @@
+mod messages;
 mod acting;
 
 mod actors;
 use actors::{dyn_actor, io_actor};
 
-const ATOM_START: acting::Atom = acting::Atom(0);
+const ATOM_START: messages::Atom = messages::Atom(0);
 
 fn main() {
     let mut worker = acting::Worker::new();
@@ -17,13 +18,13 @@ fn main() {
     eprintln!("Registered io actor at {:?}", io_addr);
     eprintln!("Registered dyn actor at {:?}", dyn_addr);
 
-    worker.msg_queue.make_ctx().push_msg(acting::Message {
+    worker.msg_queue.make_ctx().push_msg(messages::Message {
         to: dyn_addr,
-        cont: acting::MessageContent {
+        cont: messages::MessageContent {
             atom: ATOM_START,
             data: vec![
-                acting::Argument::ActorAddr(io_addr),
-                acting::Argument::Atom(io_actor::IOActor::PRINT_MSG),
+                messages::Argument::ActorAddr(io_addr),
+                messages::Argument::Atom(io_actor::IOActor::PRINT_MSG),
             ],
         },
         arrive_after: None,
@@ -35,14 +36,14 @@ fn main() {
 fn construct_dyn() -> dyn_actor::DynActor {
     let mut actor_fns = std::collections::HashMap::new();
 
-    let fn_1 = move |msg_content: acting::MessageContent, mut context: acting::Context| {
+    let fn_1 = move |msg_content: messages::MessageContent, mut context: acting::Context| {
         match &*msg_content.data {
-            &[acting::Argument::ActorAddr(io_addr), acting::Argument::Atom(ref atom)] => {
-                context.push_msg(acting::Message {
+            &[messages::Argument::ActorAddr(io_addr), messages::Argument::Atom(ref atom)] => {
+                context.push_msg(messages::Message {
                     to: io_addr,
-                    cont: acting::MessageContent {
+                    cont: messages::MessageContent {
                         atom: *atom,
-                        data: vec![acting::Argument::String("Hello, world".to_string())],
+                        data: vec![messages::Argument::String("Hello, world".to_string())],
                     },
                     arrive_after: Some(
                         std::time::Instant::now() + std::time::Duration::from_secs(1),
@@ -53,7 +54,7 @@ fn construct_dyn() -> dyn_actor::DynActor {
         }
     };
 
-    let fn_1_boxed: Box<dyn Fn(acting::MessageContent, acting::Context)> = Box::new(fn_1);
+    let fn_1_boxed: Box<dyn Fn(messages::MessageContent, acting::Context)> = Box::new(fn_1);
 
     actor_fns.insert(ATOM_START, ("START".to_string(), fn_1_boxed));
 
