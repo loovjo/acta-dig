@@ -87,6 +87,18 @@ impl<'a> VMState<'a> {
         Ok(value)
     }
 
+    fn read_f64(&mut self) -> Result<f64, VMError> {
+        if self.instruction_pointer + 8 > self.instructions.len() {
+            return Err(VMError::OutOfBounds);
+        }
+        let bytes = &self.instructions[self.instruction_pointer..self.instruction_pointer + 8];
+        self.instruction_pointer += 8;
+
+        let value = f64::from_le_bytes(bytes.try_into().unwrap());
+
+        Ok(value)
+    }
+
     pub fn step_once(&mut self, io_state: &IOState) -> Result<Option<IO>, VMError> {
         match self.read_u8()? {
             0x00 => {
@@ -96,7 +108,14 @@ impl<'a> VMState<'a> {
 
                 Ok(None)
             }
-            // TODO: 0x01/set_float
+            0x01 => {
+                // set_float
+                let reg = self.read_u8()?;
+                let value = self.read_f64()?;
+                self.registers[reg as usize] = Value::Float(value);
+
+                Ok(None)
+            }
             0x02 => {
                 // set_integer
                 let reg = self.read_u8()?;
@@ -176,6 +195,70 @@ impl<'a> VMState<'a> {
                     Value::Number(source_val) => match &mut self.registers[dest as usize] {
                         &mut Value::Number(ref mut dest_val) => {
                             *dest_val *= source_val;
+                            Ok(None)
+                        }
+                        val => Err(VMError::WrongValueType(val.clone())),
+                    },
+                    ref val => Err(VMError::WrongValueType(val.clone())),
+                }
+            }
+            0x20 => {
+                // add_float
+                let dest = self.read_u8()?;
+                let source = self.read_u8()?;
+
+                match self.registers[source as usize] {
+                    Value::Float(source_val) => match &mut self.registers[dest as usize] {
+                        &mut Value::Float(ref mut dest_val) => {
+                            *dest_val += source_val;
+                            Ok(None)
+                        }
+                        val => Err(VMError::WrongValueType(val.clone())),
+                    },
+                    ref val => Err(VMError::WrongValueType(val.clone())),
+                }
+            }
+            0x21 => {
+                // sub_float
+                let dest = self.read_u8()?;
+                let source = self.read_u8()?;
+
+                match self.registers[source as usize] {
+                    Value::Float(source_val) => match &mut self.registers[dest as usize] {
+                        &mut Value::Float(ref mut dest_val) => {
+                            *dest_val -= source_val;
+                            Ok(None)
+                        }
+                        val => Err(VMError::WrongValueType(val.clone())),
+                    },
+                    ref val => Err(VMError::WrongValueType(val.clone())),
+                }
+            }
+            0x22 => {
+                // mul_float
+                let dest = self.read_u8()?;
+                let source = self.read_u8()?;
+
+                match self.registers[source as usize] {
+                    Value::Float(source_val) => match &mut self.registers[dest as usize] {
+                        &mut Value::Float(ref mut dest_val) => {
+                            *dest_val *= source_val;
+                            Ok(None)
+                        }
+                        val => Err(VMError::WrongValueType(val.clone())),
+                    },
+                    ref val => Err(VMError::WrongValueType(val.clone())),
+                }
+            }
+            0x23 => {
+                // div_float
+                let dest = self.read_u8()?;
+                let source = self.read_u8()?;
+
+                match self.registers[source as usize] {
+                    Value::Float(source_val) => match &mut self.registers[dest as usize] {
+                        &mut Value::Float(ref mut dest_val) => {
+                            *dest_val /= source_val;
                             Ok(None)
                         }
                         val => Err(VMError::WrongValueType(val.clone())),
@@ -364,6 +447,68 @@ fn test_intops() {
     assert_eq!(
         (&vm.registers[0], &vm.registers[1]),
         (&Value::Number(2500), &Value::Number(0)),
+    );
+}
+
+#[test]
+// Comparing floats should be fine here, since we do the exact same operations
+fn test_flops() {
+    // set_float r0 20.5
+    // set_float r1 29.5
+    // add_float r0 r1
+    // div_float r1 r0
+    // mul_float r0 r0
+    // sub_float r1 r1
+    #[rustfmt::skip]
+    let code = &[
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x34, 0x40, // 20.5 in hex
+        0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x3d, 0x40, // 29.5 in hex
+        0x20, 0x00, 0x01,
+        0x23, 0x01, 0x00,
+        0x22, 0x00, 0x00,
+        0x21, 0x01, 0x01,
+    ];
+    let io_state = IOState {
+        self_addr: ActorAddr::random(),
+    };
+    let mut vm = VMState::new(code);
+
+    // set_float r0 20.5
+    // set_float r1 29.5
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Float(20.5), &Value::Float(29.5)),
+    );
+
+    // add_float r0 r1
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Float(50.0), &Value::Float(29.5)),
+    );
+
+    // div_float r1 r0
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Float(50.0), &Value::Float(29.5 / 50.0)),
+    );
+
+    // mul_float r0 r0
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Float(2500.0), &Value::Float(29.5 / 50.0)),
+    );
+
+    // sub_float r1 r1
+    assert_eq!(vm.step_once(&io_state), Ok(None));
+    assert_eq!(
+        (&vm.registers[0], &vm.registers[1]),
+        (&Value::Float(2500.0), &Value::Float(0.0)),
     );
 }
 

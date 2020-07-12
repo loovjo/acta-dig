@@ -62,7 +62,17 @@ by that many number of 8-byte pairs, specifying the start and end of each progra
         destination *= source
 
 === Float operators:
-    TODO
+    add_float: 0x20 [destination:register] [source:register]
+        destination += source
+
+    sub_float: 0x21 [destination:register] [source:register]
+        destination -= source
+
+    mul_float: 0x22 [destination:register] [source:register]
+        destination *= source
+
+    div_float: 0x23 [destination:register] [source:register]
+        destination *= source
 
 === State handlers
 
