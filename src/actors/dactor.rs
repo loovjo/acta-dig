@@ -6,9 +6,13 @@ use crate::messages::{ActorAddr, Atom, Message, MessageContent, Value};
 use crate::vm::dactor_base::DactorBase;
 use crate::vm::{IOState, VMState, IO};
 
+// TODO: Make atom_name into a reference to the actual actor_base source.
+// Currently we clone the atom_name three from adding a handler to getting debug info for the
+// corresponding atom, which is not ideal.
 pub struct Handler {
     program_idx: usize,
     presets: Vec<(u8, Value)>,
+    atom_name: String,
 }
 
 impl Handler {
@@ -54,7 +58,7 @@ impl Handler {
                 Ok(Some(IO::AddHandler {
                     atom,
                     program,
-                    atom_name: _,
+                    atom_name,
                     presets,
                 })) => {
                     new_handlers.insert(
@@ -62,6 +66,7 @@ impl Handler {
                         Some(Handler {
                             program_idx: program as usize,
                             presets,
+                            atom_name: atom_name.to_string(),
                         }),
                     );
                 }
@@ -92,6 +97,7 @@ impl<'a> Dactor<'a> {
         let start_handler = Handler {
             program_idx: 0,
             presets: Vec::new(),
+            atom_name: "start-all".to_string(),
         };
 
         let resp = start_handler.handle(
@@ -133,19 +139,25 @@ impl<'a> Actor for Dactor<'a> {
     }
 
     fn debug_info<'di>(&'di self) -> Box<dyn DebugInfo + 'di> {
-        Box::new(DactorDebugInfo)
+        Box::new(DactorDebugInfo {
+            atom_names: self
+                .handlers
+                .iter()
+                .map(|(&k, h)| (k, h.atom_name.clone()))
+                .collect(),
+        })
     }
 }
 
-pub struct DactorDebugInfo;
+pub struct DactorDebugInfo {
+    atom_names: HashMap<Atom, String>,
+}
 
 impl DebugInfo for DactorDebugInfo {
     fn get_actor_name(&self) -> String {
         "Dactor".to_string()
     }
     fn get_atom_name(&self, atom: Atom) -> Option<String> {
-        match atom {
-            _ => None,
-        }
+        self.atom_names.get(&atom).cloned()
     }
 }
