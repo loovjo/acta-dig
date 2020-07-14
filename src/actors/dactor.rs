@@ -18,7 +18,7 @@ impl Handler {
         msg: MessageContent,
         mut ctx: Option<Context<'ctx>>,
     ) -> HashMap<Atom, Option<Handler>> {
-        let mut vm = VMState::new(&base.programs[self.program_idx]);
+        let mut vm = VMState::new(&base.actor_code, base.programs[self.program_idx]);
         // Place preset
         for (i, arg) in self.presets.iter() {
             vm.registers[*i as usize] = arg.clone();

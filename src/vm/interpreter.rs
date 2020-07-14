@@ -4,14 +4,17 @@ use super::types::*;
 use crate::messages::{ActorAddr, Atom, Value};
 
 pub struct VMState<'a> {
-    instructions: &'a [u8],
+    actor_code: &'a [u8],
     instruction_pointer: usize,
+    program_end: usize,
 
     pub registers: [Value; 256],
 }
 
 impl<'a> VMState<'a> {
-    pub fn new(instructions: &'a [u8]) -> VMState {
+    pub fn new(actor_code: &'a [u8], (start, end): (usize, usize)) -> VMState {
+        assert!(start <= end);
+        assert!(end <= actor_code.len());
         let registers = {
             let mut registers: [std::mem::MaybeUninit<Value>; 256] =
                 unsafe { std::mem::MaybeUninit::uninit().assume_init() };
@@ -26,27 +29,28 @@ impl<'a> VMState<'a> {
         };
 
         VMState {
-            instructions,
-            instruction_pointer: 0,
+            actor_code,
+            instruction_pointer: start,
+            program_end: end,
             registers,
         }
     }
 
     pub fn read_u8(&mut self) -> Result<u8, VMError> {
-        if self.instruction_pointer >= self.instructions.len() {
+        if self.instruction_pointer >= self.program_end {
             return Err(VMError::OutOfBounds);
         }
-        let value = self.instructions[self.instruction_pointer];
+        let value = self.actor_code[self.instruction_pointer];
         self.instruction_pointer += 1;
 
         Ok(value)
     }
 
     fn read_u64(&mut self) -> Result<u64, VMError> {
-        if self.instruction_pointer + 8 > self.instructions.len() {
+        if self.instruction_pointer + 8 > self.program_end {
             return Err(VMError::OutOfBounds);
         }
-        let bytes = &self.instructions[self.instruction_pointer..self.instruction_pointer + 8];
+        let bytes = &self.actor_code[self.instruction_pointer..self.instruction_pointer + 8];
         self.instruction_pointer += 8;
 
         let value = u64::from_le_bytes(bytes.try_into().unwrap());
@@ -55,10 +59,10 @@ impl<'a> VMState<'a> {
     }
 
     fn read_f64(&mut self) -> Result<f64, VMError> {
-        if self.instruction_pointer + 8 > self.instructions.len() {
+        if self.instruction_pointer + 8 > self.program_end {
             return Err(VMError::OutOfBounds);
         }
-        let bytes = &self.instructions[self.instruction_pointer..self.instruction_pointer + 8];
+        let bytes = &self.actor_code[self.instruction_pointer..self.instruction_pointer + 8];
         self.instruction_pointer += 8;
 
         let value = f64::from_le_bytes(bytes.try_into().unwrap());

@@ -1,7 +1,8 @@
 use std::convert::TryInto;
 
 pub struct DactorBase {
-    pub programs: Vec<Vec<u8>>,
+    pub actor_code: Vec<u8>,
+    pub programs: Vec<(usize, usize)>,
 }
 
 #[derive(Debug)]
@@ -41,10 +42,9 @@ impl DactorBase {
                 return Err(ParseDactorError::ProgramOutOfRange(prog_end));
             }
 
-            let program = &orig_inp[prog_start..prog_end];
-            programs.push(program.to_vec());
+            programs.push((prog_start, prog_end));
         }
 
-        Ok(DactorBase { programs })
+        Ok(DactorBase { actor_code: orig_inp.to_vec(), programs })
     }
 }
