@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 
-use super::types::*;
+use super::io::*;
 use crate::messages::{ActorAddr, Atom, Value};
 
 pub struct VMState<'a> {
@@ -70,7 +70,16 @@ impl<'a> VMState<'a> {
         Ok(value)
     }
 
-    pub fn step_once(&mut self, io_state: &IOState) -> Result<Option<IO>, VMError> {
+    fn read_str(&mut self) -> Result<&'a str, VMError> {
+        let str_len = self.read_u64()? as usize;
+        if self.instruction_pointer + str_len > self.actor_code.len() {
+            return Err(VMError::OutOfBounds);
+        }
+        let slice = &self.actor_code[self.instruction_pointer..self.instruction_pointer+str_len];
+        std::str::from_utf8(slice).map_err(|_err| VMError::InvalidUTF8Error(slice.to_vec()))
+    }
+
+    pub fn step_once(&mut self, io_state: &IOState) -> Result<Option<IO<'a>>, VMError> {
         let inst = match self.read_u8() {
             Ok(inst) => inst,
             Err(VMError::OutOfBounds) => return Ok(Some(IO::Done)),
@@ -274,6 +283,13 @@ impl<'a> VMState<'a> {
 
                 let program = self.read_u64()?;
 
+                let str_ref = self.read_u64()? as usize;
+
+                let stored_ip = self.instruction_pointer;
+                self.instruction_pointer = str_ref;
+                let atom_name = self.read_str()?;
+                self.instruction_pointer = stored_ip;
+
                 let n_presets = self.read_u64()? as usize;
                 let mut presets = Vec::with_capacity(n_presets);
                 for _ in 0..n_presets {
@@ -285,6 +301,7 @@ impl<'a> VMState<'a> {
                 Ok(Some(IO::AddHandler {
                     atom,
                     program,
+                    atom_name,
                     presets,
                 }))
             }

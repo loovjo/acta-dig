@@ -54,6 +54,7 @@ impl Handler {
                 Ok(Some(IO::AddHandler {
                     atom,
                     program,
+                    atom_name: _,
                     presets,
                 })) => {
                     new_handlers.insert(

@@ -1,7 +1,7 @@
 use crate::messages::{ActorAddr, Atom, Value};
 
 #[derive(Debug, PartialEq)]
-pub enum IO {
+pub enum IO<'a> {
     SendMessage {
         to: ActorAddr,
         // TODO
@@ -12,6 +12,7 @@ pub enum IO {
     AddHandler {
         atom: Atom,
         program: u64,
+        atom_name: &'a str,
         presets: Vec<(u8, Value)>,
     },
     RemoveHandler {
@@ -25,6 +26,7 @@ pub enum VMError {
     OutOfBounds,
     NoSuchInstruction(u8),
     WrongValueType(Value),
+    InvalidUTF8Error(Vec<u8>),
 }
 
 #[derive(Debug, Eq, PartialEq)]
