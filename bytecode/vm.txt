@@ -25,6 +25,10 @@ and then the actual programs.
 The meta information starts with a 8-byte number which is the number of bytecode programs, followed
 by that many number of 8-byte pairs, specifying the start and end of each program in the file.
 
+## Strings
+
+A string is prefixed by its byte length. Every string has to a be valid UTF-8.
+
 ## Bytecode intstructions: (imm-N is N bytes)
 
 === Assignments
@@ -81,12 +85,14 @@ by that many number of 8-byte pairs, specifying the start and end of each progra
 
         Send a message to the receiver.
 
-    add_handler: 0x81 [atom:register] [program:imm8] [n_preset_arguments:imm8]
+    add_handler: 0x81 [atom:register] [program:imm8] [atom_name:imm8/str_ref] [n_preset_arguments:imm8]
                      [preset_idx_1:register] [preset_value_1:register] ... (count = n_preset_arguments)
 
         Add a new message handler. The code for the handler is the program'th bytecode program from
         the actor base. For every preset n, register[preset_idx_n] = preset_value_n
         If a handler for the atom already exists, it will be replaced.
+        atom_name is an immediate reference to the name of the atom, which is used for debugging and
+        diagnostics/logging purposes.
 
     remove_handler: 0x82 [atom:register]
 
