@@ -33,6 +33,9 @@ INSTRUCTION_PATTERNS = \
     [ InstructionPattern("dw", bytes([]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
         .verify("argument one has to be int", 0, lambda args: isinstance(args[0], Integer))
+    , InstructionPattern("ds", bytes([]))
+        .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
+        .verify("argument one has to be string", 0, lambda args: isinstance(args[0], String))
     , InstructionPattern("set_self_addr", bytes([0x00]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)
         .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
@@ -102,14 +105,15 @@ INSTRUCTION_PATTERNS = \
         )
         # TODO: Check that all register-arguments are registers, with good errors
     , InstructionPattern("add_handler", bytes([0x81]))
-        .verify("needs at least 3 arguments", DISPLAY_ALL, lambda args: len(args) >= 3)
+        .verify("needs at least 4 arguments", DISPLAY_ALL, lambda args: len(args) >= 3)
         .verify("argument one has to be register", 0, lambda args: isinstance(args[0], Register))
         .verify("argument two has to be integer", 1, lambda args: isinstance(args[1], Integer))
         .verify("argument three has to be integer", 2, lambda args: isinstance(args[2], Integer))
+        .verify("argument four has to be integer reference", 3, lambda args: isinstance(args[3], Integer))
         .verify(
             "needs this many register-arguments",
             2,
-            lambda args: len(args) == args[2].inner.value * 2 + 3
+            lambda args: len(args) == args[3].inner.value * 2 + 4
         )
     , InstructionPattern("remove_handler", bytes([0x82]))
         .verify("needs one argument", DISPLAY_ALL, lambda args: len(args) == 1)

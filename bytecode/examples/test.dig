@@ -23,27 +23,31 @@ dw @=('increase-counter-end')
 dw @=('set-counter-increased-start')
 dw @=('set-counter-increased-end')
 
+@label('increase-counter-name') ds 'increase-counter'
+@label('get-counter-name') ds 'get-counter'
+@label('start-name') ds 'start'
+@label('set-counter-increased-name') ds 'set-counter-increased'
 
 @label('start-start')
 
     ; Assign handlers
     set_integer r0 @=('start-atom')
     integer_to_atom r0
-    add_handler r0 @=('start-func') 0
+    add_handler r0 @=('start-func') @=('start-name') 0
 
     set_integer r0 @=('get-counter-atom')
     integer_to_atom r0
     set_integer r255 0
-    add_handler r0 @=('get-counter-func') 1
+    add_handler r0 @=('get-counter-func') @=('get-counter-name') 1
         r255 r255
 
     set_integer r0 @=('increase-counter-atom')
     integer_to_atom r0
-    add_handler r0 @=('increase-counter-func') 0
+    add_handler r0 @=('increase-counter-func') @=('increase-counter-name') 0
 
     set_integer r0 @=('set-counter-increased-atom')
     integer_to_atom r0
-    add_handler r0 @=('set-counter-increased-func') 0
+    add_handler r0 @=('set-counter-increased-func') @=('set-counter-increased-name') 0
 
 @label('start-end')
 
@@ -89,7 +93,7 @@ dw @=('set-counter-increased-end')
 
     set_integer r1 @=('get-counter-atom')
     integer_to_atom r1
-    add_handler r1 @=('get-counter-func') 1
+    add_handler r1 @=('get-counter-func') @=('get-counter-name') 1
         r255 r0
 
 @label('set-counter-increased-end')
